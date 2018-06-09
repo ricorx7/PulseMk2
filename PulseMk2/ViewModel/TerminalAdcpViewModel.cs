@@ -496,7 +496,7 @@ namespace RTI
         {
             if(_serialPort != null && _serialPort.IsAvailable())
             {
-                _serialPort.SetLocalSystemDateTime();
+                Task.Run(() => _serialPort.SetLocalSystemDateTime());
             }
             else
             {
@@ -535,7 +535,7 @@ namespace RTI
         {
             if (_serialPort != null && _serialPort.IsAvailable())
             {
-                _serialPort.SendForceBreak();
+                Task.Run(() => _serialPort.SendForceBreak());
             }
             else
             {

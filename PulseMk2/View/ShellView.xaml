@@ -34,6 +34,61 @@
                     </MenuItem.Icon>
                 </MenuItem>
             </MenuItem>
+            <MenuItem Header="_Record">
+                <MenuItem Header="_Quick">
+                    <MenuItem.Icon>
+                        <iconPacks:Material Kind="Image"/>
+                    </MenuItem.Icon>
+                    <MenuItem.HeaderTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Controls:ToggleSwitch OnLabel="Recording File" OffLabel="Stop Recording"  />
+                            </Grid>
+                        </DataTemplate>
+                    </MenuItem.HeaderTemplate>
+                </MenuItem>
+                <Separator />
+                <MenuItem>
+                    <MenuItem.HeaderTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="Project Path" Margin="5" FontWeight="Bold" />
+                                <TextBox Grid.Row="1" Text="{Binding ProjectPath}" />
+                            </Grid>
+                        </DataTemplate>
+                    </MenuItem.HeaderTemplate>
+                </MenuItem>
+                <MenuItem>
+                    <MenuItem.HeaderTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="Project Name" Margin="5" FontWeight="Bold" />
+                                <TextBox Grid.Row="1" Text="{Binding ProjectName}" />
+                            </Grid>
+                        </DataTemplate>
+                    </MenuItem.HeaderTemplate>
+                </MenuItem>
+                <MenuItem Header="Record Project">
+                    <MenuItem.Icon>
+                        <iconPacks:Material Kind="FolderImage" />
+                    </MenuItem.Icon>
+                    <MenuItem.HeaderTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Controls:ToggleSwitch OnLabel="Recording Project" OffLabel="Stop Recording"  />
+                            </Grid>
+                        </DataTemplate>
+                    </MenuItem.HeaderTemplate>
+                </MenuItem>
+            </MenuItem>
         </Menu>
 
         <ContentControl x:Name="ActiveItem" />
