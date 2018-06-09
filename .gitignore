@@ -1,0 +1,4 @@
+packages/*
+.vs/*
+PulseMk2/bin/
+PulseMk2/obj/
