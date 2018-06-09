@@ -1,16 +1,25 @@
 ﻿using Caliburn.Micro;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace RTI
 {
     class TerminalAdcpViewModel : Caliburn.Micro.Screen, IDeactivate
     {
         #region Variables
+
+        /// <summary>
+        ///  Setup logger
+        /// </summary>
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
         /// ADCP Serial Port.
@@ -21,6 +30,11 @@ namespace RTI
         /// Serial Port options.
         /// </summary>
         private SerialOptions _serialOption;
+
+        /// <summary>
+        /// Timer to check the serial port buffer for new data.
+        /// </summary>
+        private System.Timers.Timer _displayTimer;
 
         #endregion
 
@@ -143,19 +157,19 @@ namespace RTI
         #region Receive Buffer
 
         /// <summary>
-        /// ADCP Data buffer.
-        /// </summary>
-        private string _AdcpReceiveBuffer;
-        /// <summary>
-        /// ADCP Data buffer.
+        /// ADCP Data buffer.  A timer will periodically
+        /// refresh this value to view the latest data.
         /// </summary>
         public string AdcpReceiveBuffer
         {
-            get { return _AdcpReceiveBuffer; }
-            set
+            get
             {
-                _AdcpReceiveBuffer = value;
-                NotifyOfPropertyChange(() => AdcpReceiveBuffer);
+                if(_serialPort != null)
+                {
+                    return _serialPort.ReceiveBufferString;
+                }
+
+                return "";
             }
         }
 
@@ -182,26 +196,83 @@ namespace RTI
 
         #endregion
 
-        #region Send Command
+        #region ADCP Send Commands
 
         /// <summary>
-        /// New ADCP command to send.
+        /// History of all the previous ADCP commands.
         /// </summary>
-        private string _NewAdcpCommand;
+        private ObservableCollection<string> _AdcpCommandHistory;
         /// <summary>
-        /// New ADCP command to send.
+        /// History of all the previous ADCP commands.
         /// </summary>
-        public string NewAdcpCommand
+        public IEnumerable AdcpCommandHistory
         {
-            get { return _NewAdcpCommand; }
+            get { return _AdcpCommandHistory; }
+        }
+
+        /// <summary>
+        /// Command currently selected.
+        /// </summary>
+        private string _SelectedAdcpCommand;
+        /// <summary>
+        /// Command currently selected.
+        /// </summary>
+        public string SelectedAdcpCommand
+        {
+            get { return _SelectedAdcpCommand; }
             set
             {
-                _NewAdcpCommand = value;
-                NotifyOfPropertyChange(() => NewAdcpCommand);
+                _SelectedAdcpCommand = value;
+                this.NotifyOfPropertyChange(() => this.SelectedAdcpCommand);
+                this.NotifyOfPropertyChange(() => this.NewAdcpCommand);
             }
         }
 
-        
+        /// <summary>
+        /// New command entered by the user.
+        /// This will be called when the user enters
+        /// in a new command to send to the ADCP.
+        /// It will update the list and set the SelectedCommand.
+        /// </summary>
+        public string NewAdcpCommand
+        {
+            get { return _SelectedAdcpCommand; }
+            set
+            {
+                //if (_SelectedAdcpCommand != null)
+                //{
+                //    return;
+                //}
+                if (!string.IsNullOrEmpty(value))
+                {
+                    _AdcpCommandHistory.Insert(0, value);
+                    SelectedAdcpCommand = value;
+                }
+            }
+        }
+
+
+        #endregion
+
+        #region Status Message
+
+
+        /// <summary>
+        /// Status message.
+        /// </summary>
+        private string _StatusMsg;
+        /// <summary>
+        /// Status message.
+        /// </summary>
+        public string StatusMsg
+        {
+            get { return _StatusMsg; }
+            set
+            {
+                _StatusMsg = value;
+                NotifyOfPropertyChange(() => StatusMsg);
+            }
+        }
 
         #endregion
 
@@ -215,7 +286,11 @@ namespace RTI
             // Init the settings
             Init();
 
-            
+            // Update the display
+            _displayTimer = new System.Timers.Timer(1000);
+            _displayTimer.Elapsed += _displayTimer_Elapsed;
+            _displayTimer.AutoReset = true;
+            _displayTimer.Enabled = true;
         }
 
         #region Initialize
@@ -228,6 +303,10 @@ namespace RTI
             // Init the serial options
             _serialOption = new SerialOptions();
             _serialPort = null;
+
+            _AdcpCommandHistory = new ObservableCollection<string>();
+
+            StatusMsg = "";
 
             _IsConnected = false;
             SelectedBaudRate = 115200;
@@ -265,9 +344,14 @@ namespace RTI
                 Disconnect();
             }
 
+            // Stop timer
+            _displayTimer.Close();
+
         }
 
         #endregion
+
+        #region Serial connection
 
         /// <summary>
         /// Scan for a comm port.
@@ -309,6 +393,11 @@ namespace RTI
             _serialPort = new AdcpSerialPort(_serialOption);
             _serialPort.Connect();
             _serialPort.ReceiveRawSerialDataEvent += _serialPort_ReceiveRawSerialDataEvent;
+
+            if(_serialPort.IsAvailable())
+            {
+                DisplaySerialPortStatusMsg(string.Format("Connected to ADCP on {0} - {1}", _serialOption.Port, _serialOption.BaudRate));
+            }
         }
 
         /// <summary>
@@ -322,7 +411,12 @@ namespace RTI
                 _serialPort.Disconnect();
                 _serialPort = null;
             }
+
+            // Set status message
+            DisplaySerialPortStatusMsg(string.Format("Disconnect from ADCP on {0} - {1}", _serialOption.Port, _serialOption.BaudRate));
         }
+
+        #endregion
 
         #region Commands
 
@@ -331,9 +425,13 @@ namespace RTI
         /// </summary>
         public void SendBreak()
         {
-            if(_serialPort != null)
+            if(_serialPort != null && _serialPort.IsAvailable())
             {
-                _serialPort.SendBreak();
+                Task.Run(() => _serialPort.SendBreak());
+            }
+            else
+            {
+                DisplayConnectionError();
             }
         }
 
@@ -342,9 +440,13 @@ namespace RTI
         /// </summary>
         public void StartPinging()
         {
-            if(_serialPort != null)
+            if(_serialPort != null && _serialPort.IsAvailable())
             {
-                _serialPort.StartPinging(true);
+                Task.Run(() => _serialPort.StartPinging(true));
+            }
+            else
+            {
+                DisplayConnectionError();
             }
         }
 
@@ -353,21 +455,265 @@ namespace RTI
         /// </summary>
         public void StopPinging()
         {
-            if (_serialPort != null)
+            if (_serialPort != null && _serialPort.IsAvailable())
             {
-                _serialPort.StopPinging();
+                Task.Run(() => _serialPort.StopPinging());
+            }
+            else
+            {
+                DisplayConnectionError();
+            }
+        }
+
+        /// <summary>
+        /// Send CSHOW command.
+        /// </summary>
+        public void CshowCommand()
+        {
+            SendCommand("CSHOW");
+        }
+
+        /// <summary>
+        /// Send SLEEP command.
+        /// </summary>
+        public void SleepCommand()
+        {
+            SendCommand("SLEEP");
+        }
+
+        /// <summary>
+        /// Send CEMAC command.
+        /// </summary>
+        public void CemacCommand()
+        {
+            SendCommand("CEMAC");
+        }
+
+        /// <summary>
+        /// Send STIME command.
+        /// </summary>
+        public void SetTimeCommand()
+        {
+            if(_serialPort != null && _serialPort.IsAvailable())
+            {
+                _serialPort.SetLocalSystemDateTime();
+            }
+            else
+            {
+                DisplayConnectionError();
+            }
+        }
+
+        /// <summary>
+        /// Send CPZ command.
+        /// </summary>
+        public void CpzCommand()
+        {
+            SendCommand("CPZ");
+        }
+
+        /// <summary>
+        /// Send compass connect command.
+        /// </summary>
+        public void CompassConnectCommand()
+        {
+            SendCommand(RTI.Commands.AdcpCommands.CMD_DIAGCPT);
+        }
+
+        /// <summary>
+        /// Send compass disconnect command.
+        /// </summary>
+        public void CompassDisconnectCommand()
+        {
+            SendCommand(RTI.Commands.AdcpCommands.CMD_DIAGCPT_DISCONNECT);
+        }
+
+        /// <summary>
+        /// Send Force BREAK command.
+        /// </summary>
+        public void ForceBreakCommand()
+        {
+            if (_serialPort != null && _serialPort.IsAvailable())
+            {
+                _serialPort.SendForceBreak();
+            }
+            else
+            {
+                DisplayConnectionError();
+            }
+        }
+
+        /// <summary>
+        /// Send the command to the ADCP.
+        /// </summary>
+        /// <param name="cmd"></param>
+        public void SendCommand(string cmd)
+        {
+            if(_serialPort != null && _serialPort.IsAvailable())
+            {
+                Task.Run(() => _serialPort.SendDataWaitReply(cmd));
+            }
+            else
+            {
+                DisplayConnectionError();
             }
         }
 
         /// <summary>
         /// Send a command to the ADCP.
         /// </summary>
-        public void SendCommand()
+        public void SendACommand()
+        {
+            if (_serialPort != null && _serialPort.IsAvailable())
+            {
+                Task.Run(() => _serialPort.SendDataWaitReply(SelectedAdcpCommand));
+            }
+            else
+            {
+                DisplayConnectionError();
+            }
+        }
+
+        /// <summary>
+        /// Clear the ADCP serial port Receive buffer.
+        /// </summary>
+        public void ClearReceiveBuffer()
         {
             if (_serialPort != null)
             {
-                _serialPort.SendData(_NewAdcpCommand);
+                Task.Run(() =>
+                {
+                    _serialPort.ReceiveBufferString = "";
+                    NotifyOfPropertyChange(() => this.AdcpReceiveBuffer);
+                });
             }
+        }
+
+        public void ClearCommandSet()
+        {
+            Task.Run(() =>
+            {
+                AdcpCommandSet = "";
+            });
+        }
+
+        /// <summary>
+        /// Display a connection error message.
+        /// </summary>
+        private void DisplayConnectionError()
+        {
+            DisplaySerialPortStatusMsg(string.Format("ADCP COULD NOT CONNECT: Port: {0}, Baud: {1}", _serialOption.Port, _serialOption.BaudRate));
+        }
+
+        /// <summary>
+        /// Display a serial port error message.
+        /// </summary>
+        /// <param name="error">Error message.</param>
+        private void DisplaySerialPortStatusMsg(string error)
+        {
+            //if (_serialPort != null)
+            //{
+            //    _serialPort.ReceiveBufferString = "";
+            //    _serialPort.ReceiveBufferString = error;
+            //    NotifyOfPropertyChange(() => this.AdcpReceiveBuffer);
+            //}
+            StatusMsg = error;
+        }
+
+
+        #endregion
+
+        #region Command Set
+
+        /// <summary>
+        /// Send the list of commands to the ADCP.
+        /// </summary>
+        public void SendCommandSetCommand()
+        {
+            if (_serialPort != null && _serialPort.IsAvailable())
+            {
+                Task.Run(() =>
+                {
+
+                    // Check if a conneciton could be made
+                    if (_serialPort == null || !_serialPort.IsAvailable())
+                    {
+                        DisplayConnectionError();
+                    }
+                    else
+                    {
+                        // Verify there are any commands
+                        if (!string.IsNullOrEmpty(_AdcpCommandSet))
+                        {
+                            string[] result = _AdcpCommandSet.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+                            // Remove all line feed, carrage returns, new lines and tabs
+                            for (int x = 0; x < result.Length; x++)
+                            {
+                                result[x] = result[x].Replace("\n", String.Empty);
+                                result[x] = result[x].Replace("\r", String.Empty);
+                                result[x] = result[x].Replace("\t", String.Empty);
+                            }
+
+                            _serialPort.SendCommands(result.ToList());
+                        }
+                    }
+                });
+            }
+            else
+            {
+                DisplayConnectionError();
+            }
+        }
+
+        /// <summary>
+        /// Import a command set from a file.
+        /// </summary>
+        public void ImportCommandSetCommand()
+        {
+            string fileName = "";
+            try
+            {
+                // Show the FolderBrowserDialog.
+                OpenFileDialog dialog = new OpenFileDialog();
+                dialog.Filter = "All files (*.*)|*.*";
+                dialog.Multiselect = false;
+
+                DialogResult result = dialog.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    // Get the files selected
+                    fileName = dialog.FileName;
+
+                    // Set the command set
+                    AdcpCommandSet = File.ReadAllText(fileName);
+                }
+            }
+            catch (Exception e)
+            {
+                log.Error(string.Format("Error reading command set from {0}", fileName), e);
+            }
+        }
+
+        #endregion
+
+        #region Timer
+
+        /// <summary>
+        /// Reduce the number of times the display is updated.
+        /// This will update the display based off the timer and not
+        /// based off when data is received.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void _displayTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            this.NotifyOfPropertyChange(() => this.AdcpReceiveBuffer);
+
+            // Recording
+            //this.NotifyOfPropertyChange(() => this.IsRawAdcpRecording);
+            //this.NotifyOfPropertyChange(() => this.RawAdcpBytesWritten);
+            //this.NotifyOfPropertyChange(() => this.RawAdcpFileName);
         }
 
         #endregion
@@ -380,7 +726,7 @@ namespace RTI
         /// <param name="data"></param>
         private void _serialPort_ReceiveRawSerialDataEvent(byte[] data)
         {
-            AdcpReceiveBuffer = _serialPort.ReceiveBufferString;
+            //AdcpReceiveBuffer = _serialPort.ReceiveBufferString;
         }
 
         #endregion

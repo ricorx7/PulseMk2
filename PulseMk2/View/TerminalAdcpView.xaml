@@ -13,18 +13,6 @@
     <DockPanel>
         <!--Menu Bar-->
         <Menu DockPanel.Dock="Top" >
-            <MenuItem Header="_Connection">
-                <MenuItem Header="_Connect">
-                    <MenuItem.Icon>
-                        <iconPacks:Material Kind="SerialPort" />
-                    </MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="_Disconnect">
-                    <MenuItem.Icon>
-                        <iconPacks:Material Kind="LanDisconnect" />
-                    </MenuItem.Icon>
-                </MenuItem>
-            </MenuItem>
             <MenuItem Header="_Serial Port">
                 <MenuItem>
                     <MenuItem.HeaderTemplate>
@@ -91,7 +79,7 @@
 
         <!--Status Bar-->
         <StatusBar DockPanel.Dock="Bottom">
-            <TextBlock Text="Status" />
+            <TextBlock x:Name="StatusMsg" />
         </StatusBar>
 
         <!--Commands-->
@@ -102,7 +90,7 @@
             </Grid.ColumnDefinitions>
             <!--Editable Combobox Textbox History http://stackoverflow.com/questions/3373239/wpf-editable-combobox-->
             <ComboBox Grid.Column="0" HorizontalContentAlignment="Stretch" IsEditable="True" ItemsSource="{Binding AdcpCommandHistory}" SelectedItem="{Binding SelectedAdcpCommand}" Text="{Binding NewAdcpCommand, UpdateSourceTrigger=LostFocus}" PreviewKeyDown="ComboBox_PreviewKeyDown" Margin="5" />
-            <Button Grid.Column="1" Content="Send" HorizontalAlignment="Right" x:Name="SendCommand" Margin="5" IsDefault="True" />
+            <Button Grid.Column="1" Content="Send" HorizontalAlignment="Right" x:Name="SendACommand" Margin="5" IsDefault="True" />
         </Grid>
 
         <!--Command Files-->
@@ -114,14 +102,18 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Text="Command File" FontWeight="Bold" Margin="10,0,0,0" FontSize="16" />
+                <TextBlock Grid.Row="0" Text="Command File" FontWeight="Bold" Margin="5"  FontSize="16" />
 
                 <ScrollViewer Grid.Row="1" Margin="5" >
                     <TextBox Text="{Binding Path=AdcpCommandSet}" TextWrapping="Wrap" AcceptsReturn="True" BorderThickness="0" Margin="5" FontFamily="Courier New"/>
                 </ScrollViewer>
 
-                <Button Grid.Row="2" Content="Send Command Set" HorizontalAlignment="Right" Command="{Binding SendCommandSetCommand}" Margin="5" ToolTip="Send any commands in the command file list." />
-                <Button Grid.Row="2" Content="Import Commands" HorizontalAlignment="Left" Command="{Binding ImportCommandSetCommand}" Margin="10,5,5,5" ToolTip="Import a command file." />
+                <Button Grid.Row="2" Content="Send Command Set" HorizontalAlignment="Right" x:Name="SendCommandSetCommand" Margin="5" ToolTip="Send any commands in the command file list." />
+                <Button Grid.Row="2" Content="Import Commands" HorizontalAlignment="Left" x:Name="ImportCommandSetCommand" Margin="10,5,5,5" ToolTip="Import a command file." />
+
+                <Button Grid.Row="1" x:Name="ClearCommandSet" Width="30" Height="30" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,20,0" >
+                    <iconPacks:Material Kind="Broom" />
+                </Button>
             </Grid>
         </Border>
 
@@ -131,24 +123,31 @@
                 <Button Margin="2" Content="BREAK" x:Name="SendBreak" />
                 <Button Margin="2" Content="START PING" x:Name="StartPinging" />
                 <Button Margin="2" Content="STOP PING" x:Name="StopPinging" />
-                <Button Margin="2" Content="CSHOW" />
-                <Button Margin="2" Content="SLEEP" />
-                <Button Margin="2" Content="CEMAC" />
-                <Button Margin="2" Content="SET TIME" />
-                <Button Margin="2" Content="ZERO PRESSURE SENSOR" />
-                <Button Margin="2" Content="COMPASS CONNECT" />
-                <Button Margin="2" Content="COMPASS DISCONNECT " />
+                <Button Margin="2" Content="CSHOW" x:Name="CshowCommand" />
+                <Button Margin="2" Content="SLEEP" x:Name="SleepCommand" />
+                <Button Margin="2" Content="CEMAC" x:Name="CemacCommand" />
+                <Button Margin="2" Content="SET TIME" x:Name="SetTimeCommand" />
+                <Button Margin="2" Content="ZERO PRESSURE SENSOR" x:Name="CpzCommand" />
+                <Button Margin="2" Content="COMPASS CONNECT" x:Name="CompassConnectCommand" />
+                <Button Margin="2" Content="COMPASS DISCONNECT" x:Name="CompassDisconnectCommand" />
+                <Button Margin="2" Content="FORCE BREAK" x:Name="ForceBreakCommand" />
                 
+
             </StackPanel>
         </Border>
 
         <!--Console-->
         <Border Margin="5" Background="White">
-            <ScrollViewer Margin="5" ScrollChanged="ScrollViewer_ScrollChanged">
-                <Grid>
-                    <TextBox Text="{Binding Path=AdcpReceiveBuffer, Mode=OneWay}" TextWrapping="Wrap" IsReadOnly="True" BorderThickness="0" MinWidth="300" Margin="5" FontFamily="Courier New"/>
-                </Grid>
-            </ScrollViewer>
+            <Grid>
+                <ScrollViewer Margin="5" ScrollChanged="ScrollViewer_ScrollChanged">
+                    <Grid>
+                        <TextBox Text="{Binding Path=AdcpReceiveBuffer, Mode=OneWay}" TextWrapping="Wrap" IsReadOnly="True" BorderThickness="0" MinWidth="300" Margin="5" FontFamily="Courier New"/>
+                    </Grid>
+                </ScrollViewer>
+                <Button Grid.Row="0" x:Name="ClearReceiveBuffer" Width="30" Height="30" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,20,0" >
+                    <iconPacks:Material Kind="Broom" />
+                </Button>
+            </Grid>
         </Border>
 
     </DockPanel>
