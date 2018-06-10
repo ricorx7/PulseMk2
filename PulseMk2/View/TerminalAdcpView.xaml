@@ -90,7 +90,7 @@
             </Grid.ColumnDefinitions>
             <!--Editable Combobox Textbox History http://stackoverflow.com/questions/3373239/wpf-editable-combobox-->
             <ComboBox Grid.Column="0" HorizontalContentAlignment="Stretch" IsEditable="True" ItemsSource="{Binding AdcpCommandHistory}" SelectedItem="{Binding SelectedAdcpCommand}" Text="{Binding NewAdcpCommand, UpdateSourceTrigger=LostFocus}" PreviewKeyDown="ComboBox_PreviewKeyDown" Margin="5" />
-            <Button Grid.Column="1" Content="Send" HorizontalAlignment="Right" x:Name="SendACommand" Margin="5" IsDefault="True" />
+            <Button Grid.Column="1" Content="Send" HorizontalAlignment="Right" x:Name="SendACommand" Margin="5" IsDefault="True" ToolTip="Send the command to the ADCP." />
         </Grid>
 
         <!--Command Files-->
@@ -118,23 +118,29 @@
         </Border>
 
         <!--Controls-->
-        <Border DockPanel.Dock="Right" Margin="5" Background="White" >
-            <StackPanel>
-                <Button Margin="2" Content="BREAK" x:Name="SendBreak" />
-                <Button Margin="2" Content="START PING" x:Name="StartPinging" />
-                <Button Margin="2" Content="STOP PING" x:Name="StopPinging" />
-                <Button Margin="2" Content="CSHOW" x:Name="CshowCommand" />
-                <Button Margin="2" Content="SLEEP" x:Name="SleepCommand" />
-                <Button Margin="2" Content="CEMAC" x:Name="CemacCommand" />
-                <Button Margin="2" Content="SET TIME" x:Name="SetTimeCommand" />
-                <Button Margin="2" Content="ZERO PRESSURE SENSOR" x:Name="CpzCommand" />
-                <Button Margin="2" Content="COMPASS CONNECT" x:Name="CompassConnectCommand" />
-                <Button Margin="2" Content="COMPASS DISCONNECT" x:Name="CompassDisconnectCommand" />
-                <Button Margin="2" Content="FORCE BREAK" x:Name="ForceBreakCommand" />
-                
-
-            </StackPanel>
-        </Border>
+        <StackPanel DockPanel.Dock="Right">
+            <Border Margin="5" Background="White" >
+                <StackPanel>
+                <Button Margin="2" Content="BREAK" x:Name="SendBreak" ToolTip="Send a BREAK to wakeup the ADCP." />
+                <Button Margin="2" Content="START PING" x:Name="StartPinging" ToolTip="Start pinging the ADCP.  This will also set the date and time." />
+                <Button Margin="2" Content="STOP PING" x:Name="StopPinging" ToolTip="Stop pinging the ADCP.  This will send a BREAK then the STOP command." />
+                <Button Margin="2" Content="CSHOW" x:Name="CshowCommand" ToolTip="See the current configuration of the ADCP." />
+                <Button Margin="2" Content="SLEEP" x:Name="SleepCommand" ToolTip="Put the ADCP to sleep." />
+                <Button Margin="2" Content="CEMAC" x:Name="CemacCommand" ToolTip="Turn on the Ethernet port." />
+                <Button Margin="2" Content="SET TIME" x:Name="SetTimeCommand" ToolTip="Set the date and time to the local date and time of the computer." />
+                <Button Margin="2" Content="ZERO PRESSURE SENSOR" x:Name="CpzCommand" ToolTip="Zero the pressure sensor." />
+                <Button Margin="2" Content="COMPASS CONNECT" x:Name="CompassConnectCommand" ToolTip="Connect the serial port to the compass.  The user can then use the PNI software." />
+                <Button Margin="2" Content="COMPASS DISCONNECT" x:Name="CompassDisconnectCommand" ToolTip="Disconnect the serial port from the compass." />
+                    <Button Margin="2" Content="FORCE BREAK" x:Name="ForceBreakCommand" ToolTip="Send a 30 second BREAK.  This will reset the baud rate of all the serial ports to 115200." />
+                </StackPanel>
+            </Border>
+            <Border Margin="5" Background="White">
+                <StackPanel>
+                    <Controls:ToggleSwitch Margin="5" OnLabel="Record ON " OffLabel="Record OFF" IsChecked="{Binding IsRecording}" ToolTip="Turn on or off recording the ADCP data." />
+                    <TextBlock x:Name="RecordingSize" HorizontalAlignment="Center" Margin="5" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
 
         <!--Console-->
         <Border Margin="5" Background="White">

@@ -36,6 +36,47 @@ namespace RTI
         /// </summary>
         private System.Timers.Timer _displayTimer;
 
+        #region Recorder
+
+        /// <summary>
+        /// Latest Raw ADCP Test File Name.  This is used to determine
+        /// what file name is being used for the raw ADCP, so i can
+        /// be recorded with the results.
+        /// </summary>
+        public string RawAdcpRecordFileName { get; set; }
+
+        /// <summary>
+        /// Number of bytes written to the raw ADCP file.
+        /// </summary>
+        public long RawAdcpBytesWritten { get; set; }
+
+        /// <summary>
+        /// Current size of the file.
+        /// </summary>
+        private int _rawFileSize;
+
+        /// <summary>
+        /// Binary writer for raw ADCP test data.
+        /// </summary>
+        private BinaryWriter _rawAdcpRecordBinWriter;
+
+        /// <summary>
+        /// Directory to store the raw ADCP test files.
+        /// </summary>
+        private string _rawAdcpRecordDir;
+
+        /// <summary>
+        /// ADCP Record file name for raw recording.
+        /// </summary>
+        private string _rawAdcpRecordFile;
+
+        /// <summary>
+        /// Lock for the raw ADCP file.
+        /// </summary>
+        private object _rawAdcpRecordFileLock;
+
+        #endregion
+
         #endregion
 
         #region Properties
@@ -256,7 +297,6 @@ namespace RTI
 
         #region Status Message
 
-
         /// <summary>
         /// Status message.
         /// </summary>
@@ -271,6 +311,47 @@ namespace RTI
             {
                 _StatusMsg = value;
                 NotifyOfPropertyChange(() => StatusMsg);
+            }
+        }
+
+        #endregion
+
+        #region Recording
+
+        /// <summary>
+        /// Flag to turn on or off recording.
+        /// </summary>
+        private bool _IsRecording;
+        /// <summary>
+        /// Flag to turn on or off recording.
+        /// </summary>
+        public bool IsRecording
+        {
+            get { return _IsRecording; }
+            set
+            {
+                _IsRecording = value;
+                NotifyOfPropertyChange(() => IsRecording);
+
+                // Turn on or off recording
+                SetRecording(value);
+            }
+        }
+
+        /// <summary>
+        /// Recording Size.
+        /// </summary>
+        private string _RecordingSize;
+        /// <summary>
+        /// Recording size.
+        /// </summary>
+        public string RecordingSize
+        {
+            get { return _RecordingSize; }
+            set
+            {
+                _RecordingSize = value;
+                NotifyOfPropertyChange(() => RecordingSize);
             }
         }
 
@@ -307,6 +388,15 @@ namespace RTI
             _AdcpCommandHistory = new ObservableCollection<string>();
 
             StatusMsg = "";
+
+            RecordingSize = "";
+            _IsRecording = false;
+            NotifyOfPropertyChange(() => IsRecording);
+            _rawFileSize = 0;
+            _rawAdcpRecordDir = "";
+            _rawAdcpRecordFile = null;
+            RawAdcpRecordFileName = "";
+            _rawAdcpRecordFileLock = new object();
 
             _IsConnected = false;
             SelectedBaudRate = 115200;
@@ -718,6 +808,185 @@ namespace RTI
 
         #endregion
 
+        #region Raw Record ADCP
+
+        /// <summary>
+        /// Turn on or off recording.
+        /// </summary>
+        /// <param name="isRecord"></param>
+        private void SetRecording(bool isRecord)
+        {
+            if(isRecord)
+            {
+                // Create the folder if it does not exist
+                if(!Directory.Exists(RTI.Commons.DEFAULT_RECORD_DIR))
+                {
+                    Directory.CreateDirectory(RTI.Commons.DEFAULT_RECORD_DIR);
+                }
+
+                // Start recording
+                StartRawAdcpRecord(RTI.Commons.DEFAULT_RECORD_DIR);
+            }
+            else
+            {
+                // Stop Recording
+                StopRawAdcpRecord();
+            }
+        }
+
+        /// <summary>
+        /// Set the directory for the raw recording results and
+        /// turn on the flag.
+        /// </summary>
+        /// <param name="dir">Directory to write the raw ADCP data to.</param>
+        /// <param name="file">Filename if you want to manually set it.</param>
+        public void StartRawAdcpRecord(string dir, string file = null)
+        {
+            _rawFileSize = 0;
+
+            // Set Dir
+            _rawAdcpRecordDir = dir;
+
+            // Set the file
+            _rawAdcpRecordFile = file;
+        }
+
+        /// <summary>
+        /// Stop writing data to the file.
+        /// Close the file
+        /// </summary>
+        public string StopRawAdcpRecord()
+        {
+            string fileName = RawAdcpRecordFileName;
+
+            try
+            {
+                if (_rawAdcpRecordBinWriter != null)
+                {
+                    // Flush and close the writer
+                    _rawAdcpRecordBinWriter.Flush();
+                    _rawAdcpRecordBinWriter.Close();
+                    _rawAdcpRecordBinWriter.Dispose();
+                    _rawAdcpRecordBinWriter = null;
+                }
+
+                _rawAdcpRecordFile = null;
+            }
+            catch (Exception e)
+            {
+                // Log error
+                log.Error("Error closing Raw ADCP Record.", e);
+                return fileName;
+            }
+
+            return fileName;
+        }
+
+        /// <summary>
+        /// Verify the writer is created.  If it is not turned on,
+        /// craete the writer.  Then write the data.
+        /// Write the raw ADCP data to the raw ADCP file.
+        /// </summary>
+        /// <param name="data">Data to write to the file.</param>
+        private void WriteRawAdcpData(byte[] data)
+        {
+            // Verify recording is turned on
+            if (IsRecording)
+            {
+                // Create the writer if it does not exist
+                if (_rawAdcpRecordBinWriter == null)
+                {
+                    // Create writer
+                    CreateRawAdcpWriter();
+                }
+
+                // See if a new file needs to be created based off the max file size
+                if (_rawFileSize + data.Length > RTI.Commons.MAX_FILE_SIZE)
+                {
+                    // Store the current file size
+                    long currentSize = RawAdcpBytesWritten;
+                    RecordingSize = MathHelper.MemorySizeString(RawAdcpBytesWritten);       // Set as a string
+
+                    // Stop the current recording
+                    StopRawAdcpRecord();
+
+                    // Start a new file
+                    StartRawAdcpRecord(RTI.Commons.DEFAULT_RECORD_DIR);
+
+                    // Create a new writer with the current file size
+                    CreateRawAdcpWriter(currentSize);
+                }
+
+                // Verify writer is created
+                if (_rawAdcpRecordBinWriter != null)
+                {
+                    try
+                    {
+                        // Seen thread exceptions for trying to have
+                        // multiple threads write at the same time.
+                        // The serial data is coming in and it is not writing fast enough
+                        lock (_rawAdcpRecordFileLock)
+                        {
+                            // Write the data to the file
+                            _rawAdcpRecordBinWriter.Write(data);
+
+                            // Accumulate the number of bytes written
+                            RawAdcpBytesWritten += data.Length;
+                            RecordingSize = MathHelper.MemorySizeString(RawAdcpBytesWritten);       // Set as a string
+
+                            // Monitor the file size to create a new file when it exeeds max file size
+                            _rawFileSize += data.Length;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        // Error writing lake test data
+                        log.Error("Error raw ADCP data..", e);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Create a binary writer to write the raw ADCP data
+        /// to the file.  Use the ensemble to get a serial number for
+        /// the data.
+        /// </summary>
+        /// <param name="initFileSize">Initial file size.</param>
+        private void CreateRawAdcpWriter(long initFileSize = 0)
+        {
+            // Create a file name
+            DateTime currDateTime = DateTime.Now;
+
+            string filename = string.Format("RawADCP_{0:yyyyMMddHHmmss}.ens", currDateTime);
+            if (_rawAdcpRecordFile != null)
+            {
+                // Overwrite the file name
+                filename = _rawAdcpRecordFile;
+            }
+
+            string filePath = string.Format("{0}\\{1}", _rawAdcpRecordDir, filename);
+
+            try
+            {
+                // Open the binary writer
+                _rawAdcpRecordBinWriter = new BinaryWriter(File.Open(filePath, FileMode.Create, FileAccess.Write));
+
+                // Set the raw ADCP file name
+                RawAdcpRecordFileName = filePath;
+
+                // Reset the number of bytes written
+                RawAdcpBytesWritten = initFileSize;
+                RecordingSize = MathHelper.MemorySizeString(RawAdcpBytesWritten);       // Set as a string
+            }
+            catch (Exception e)
+            {
+                log.Error("Error creating the raw ADCP file.", e);
+            }
+        }
+
+        #endregion
+
         #region EventHandlers
 
         /// <summary>
@@ -726,7 +995,8 @@ namespace RTI
         /// <param name="data"></param>
         private void _serialPort_ReceiveRawSerialDataEvent(byte[] data)
         {
-            //AdcpReceiveBuffer = _serialPort.ReceiveBufferString;
+            // Record data
+            WriteRawAdcpData(data);
         }
 
         #endregion
