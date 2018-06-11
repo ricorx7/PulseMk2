@@ -17,7 +17,20 @@ namespace RTI {
             container.Singleton<IEventAggregator, EventAggregator>();
             container.PerRequest<IShell, ShellViewModel>();
             container.Singleton<HomeViewModel, HomeViewModel>();
+
             container.Singleton<TerminalAdcpViewModel, TerminalAdcpViewModel>();
+            var termAdcpVM = container.GetInstance<TerminalAdcpViewModel>();
+            container.Instance<IDisposable>(termAdcpVM);                                // Dispose Interface
+
+            // DataFormat VM with ICodecLayer
+            container.Singleton<DataFormatViewModel, DataFormatViewModel>();
+            var dataFormatVM = container.GetInstance<DataFormatViewModel>();
+            container.Instance<ICodecLayer>(dataFormatVM);                              // Codec Layer Interface
+            container.Instance<IDisposable>(dataFormatVM);                              // Dispose Interface
+
+            container.Singleton<HeatmapPlotViewModel, HeatmapPlotViewModel>();
+            var heatmapVM = container.GetInstance<HeatmapPlotViewModel>();
+            container.Instance<IPlotLayer>(heatmapVM);                                  // Plot Layer interface
         }
 
         protected override object GetInstance(Type service, string key) {

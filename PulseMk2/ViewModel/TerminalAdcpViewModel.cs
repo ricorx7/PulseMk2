@@ -12,7 +12,7 @@ using System.Windows.Forms;
 
 namespace RTI
 {
-    class TerminalAdcpViewModel : Caliburn.Micro.Screen, IDeactivate
+    class TerminalAdcpViewModel : Caliburn.Micro.Screen, IDisposable, IDeactivate, IActivate
     {
         #region Variables
 
@@ -418,7 +418,29 @@ namespace RTI
 
         #endregion
 
-        #region Deactivate
+        #region Dispose
+
+        /// <summary>
+        /// Dispose of the view model.
+        /// </summary>
+        public void Dispose()
+        {
+            // Disconnect serial port
+            Disconnect();
+
+            // Stop recording
+            if (IsRecording)
+            {
+                StopRawAdcpRecord();
+            }
+
+            // Stop timer
+            _displayTimer.Close();
+        }
+
+        #endregion
+
+        #region Activate / Deactivate
 
         /// <summary>
         /// Call if closing the screen.
@@ -429,14 +451,20 @@ namespace RTI
             base.OnDeactivate(close);
 
             // If shutting down, disconnect if still connected
-            if(close)
+            if (close)
             {
-                Disconnect();
+                _displayTimer.Stop();
             }
+        }
 
-            // Stop timer
-            _displayTimer.Close();
+        /// <summary>
+        /// Start the timer on activate.
+        /// </summary>
+        protected override void OnActivate()
+        {
+            base.OnActivate();
 
+            _displayTimer.Start();
         }
 
         #endregion
@@ -997,6 +1025,13 @@ namespace RTI
         {
             // Record data
             WriteRawAdcpData(data);
+
+            // Pass the data to all codec layers
+            foreach (var vm in IoC.GetAllInstances(typeof(ICodecLayer)))
+            {
+                ((ICodecLayer)vm).AddData(data, EnsembleSource.Serial);
+            }
+            
         }
 
         #endregion
