@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RTI.Interfaces
+namespace RTI
 {
 
     /// <summary>
@@ -35,7 +35,7 @@ namespace RTI.Interfaces
     /// <summary>
     /// Pass Processed Ensemble data.
     /// </summary>
-    interface IProcessedEnsLayer
+    interface IProcessEnsLayer
     {
 
         /// <summary>
@@ -45,8 +45,9 @@ namespace RTI.Interfaces
         /// <param name="ensemble">Ensemble data.</param>
         /// <param name="source">Source of the ensemble.</param>
         /// <param name="type">Type of ensemble.</param>
+        /// <param name="dataFormat">Data Format.</param>
         /// <returns>Negative number indicates an error.</returns>
-        int HandleProcessedEnsemble(DataSet.Ensemble ensemble, EnsembleSource source, EnsembleType type);
+        int ProcessEnsemble(DataSet.Ensemble ensemble, EnsembleSource source, AdcpCodec.CodecEnum dataFormat);
 
     }
 }

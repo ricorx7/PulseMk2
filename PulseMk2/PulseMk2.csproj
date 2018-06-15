@@ -153,17 +153,27 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AppBootstrapper.cs" />
-    <Compile Include="Model\ICodecLayer.cs" />
-    <Compile Include="IShell.cs" />
+    <Compile Include="DataFormatOptions.cs" />
+    <Compile Include="Interfaces\IAverageEnsLayer.cs" />
+    <Compile Include="Interfaces\IProcessEnsLayer.cs" />
+    <Compile Include="Interfaces\IRecordEnsLayer.cs" />
+    <Compile Include="Interfaces\IScreenEnsLayer.cs" />
+    <Compile Include="Interfaces\ICodecLayer.cs" />
+    <Compile Include="Interfaces\IShell.cs" />
     <Compile Include="Model\Commons.cs" />
     <Compile Include="Model\DbDataHelper.cs" />
-    <Compile Include="Model\IPlotLayer.cs" />
+    <Compile Include="Interfaces\IPlotLayer.cs" />
     <Compile Include="Model\OxyColorToBurshConverter.cs" />
     <Compile Include="Model\OxyPaletteToBrushConverter.cs" />
+    <Compile Include="Model\ViewSubsystemConfig.cs" />
+    <Compile Include="Options\ScreenEnsembleOptions.cs" />
+    <Compile Include="ViewModel\DashboardSubsystemConfigViewModel.cs" />
+    <Compile Include="ViewModel\DashboardViewModel.cs" />
     <Compile Include="ViewModel\DataFormatViewModel.cs" />
     <Compile Include="ViewModel\HeatmapPlotViewModel.cs" />
     <Compile Include="ViewModel\HomeViewModel.cs" />
     <Compile Include="ViewModel\PlotViewModel.cs" />
+    <Compile Include="ViewModel\ScreenEnsembleViewModel.cs" />
     <Compile Include="ViewModel\ShellViewModel.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
@@ -171,6 +181,12 @@
     </Compile>
     <Compile Include="ViewModel\TerminalAdcpViewModel.cs" />
     <Compile Include="ViewModel\ViewResolvingPlotModel.cs" />
+    <Compile Include="View\DashboardSubsystemConfigView.xaml.cs">
+      <DependentUpon>DashboardSubsystemConfigView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\DashboardView.xaml.cs">
+      <DependentUpon>DashboardView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\DataFormatView.xaml.cs">
       <DependentUpon>DataFormatView.xaml</DependentUpon>
     </Compile>
@@ -182,6 +198,14 @@
       <DependentUpon>TerminalAdcpView.xaml</DependentUpon>
     </Compile>
     <Page Include="Defaults.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\DashboardSubsystemConfigView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\DashboardView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

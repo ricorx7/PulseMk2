@@ -417,11 +417,16 @@ namespace RTI
                     break;
             }
 
-            // Pass the data to screeners
-            // Pass the data to all codec layers
-            foreach (var vm in IoC.GetAllInstances(typeof(IScreenEnsLayer)))
+            // Pass the data to all Screen layers
+            foreach (var vm in IoC.GetAllInstances(typeof(IProcessEnsLayer)))
             {
-                ((IScreenEnsLayer)vm).ScreenEnsemble(binaryEnsemble, ensemble, EnsembleSource.Serial, dataFormat);
+                ((IProcessEnsLayer)vm).ProcessEnsemble(ensemble, EnsembleSource.Serial, dataFormat);
+            }
+
+            // Pass the data to all Record layers
+            foreach (var vm in IoC.GetAllInstances(typeof(IRecordEnsLayer)))
+            {
+                ((IRecordEnsLayer)vm).RecordEnsemble(binaryEnsemble, ensemble, EnsembleSource.Serial, dataFormat);
             }
 
         }

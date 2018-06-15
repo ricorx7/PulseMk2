@@ -30,6 +30,14 @@ namespace RTI {
         }
 
         /// <summary>
+        /// Select the Dashboard view.
+        /// </summary>
+        public void DashboardView()
+        {
+            ActivateItem(IoC.Get<DashboardViewModel>());
+        }
+
+        /// <summary>
         /// Select the terminal view.
         /// </summary>
         public void GraphicalView()

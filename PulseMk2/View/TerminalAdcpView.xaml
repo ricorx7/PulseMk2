@@ -8,7 +8,7 @@
              xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:cal="http://www.caliburnproject.org"
              mc:Ignorable="d" 
-             Background="#FF407BA8"
+             Background="{StaticResource PulseBackground}"
              d:DesignHeight="400" d:DesignWidth="600">
     <DockPanel>
         <!--Menu Bar-->
@@ -94,7 +94,7 @@
         </Grid>
 
         <!--Command Files-->
-        <Border DockPanel.Dock="Right" Width="300" Margin="5" Background="White" >
+        <Border DockPanel.Dock="Right" Width="300" Margin="5" Background="{StaticResource PulseBlock}" >
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -119,7 +119,7 @@
 
         <!--Controls-->
         <StackPanel DockPanel.Dock="Right">
-            <Border Margin="5" Background="White" >
+            <Border Margin="5" Background="{StaticResource PulseBlock}" >
                 <StackPanel>
                 <Button Margin="2" Content="BREAK" x:Name="SendBreak" ToolTip="Send a BREAK to wakeup the ADCP." />
                 <Button Margin="2" Content="START PING" x:Name="StartPinging" ToolTip="Start pinging the ADCP.  This will also set the date and time." />
@@ -134,7 +134,7 @@
                     <Button Margin="2" Content="FORCE BREAK" x:Name="ForceBreakCommand" ToolTip="Send a 30 second BREAK.  This will reset the baud rate of all the serial ports to 115200." />
                 </StackPanel>
             </Border>
-            <Border Margin="5" Background="White">
+            <Border Margin="5" Background="{StaticResource PulseBlock}">
                 <StackPanel>
                     <Controls:ToggleSwitch Margin="5" OnLabel="Record ON " OffLabel="Record OFF" IsChecked="{Binding IsRecording}" ToolTip="Turn on or off recording the ADCP data." />
                     <TextBlock x:Name="RecordingSize" HorizontalAlignment="Center" Margin="5" />
@@ -143,7 +143,7 @@
         </StackPanel>
 
         <!--Console-->
-        <Border Margin="5" Background="White">
+        <Border Margin="5" Background="{StaticResource PulseBlock}">
             <Grid>
                 <ScrollViewer Margin="5" ScrollChanged="ScrollViewer_ScrollChanged">
                     <Grid>

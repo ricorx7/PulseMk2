@@ -29,9 +29,9 @@
                         <iconPacks:Material Kind="Console" />
                     </MenuItem.Icon>
                 </MenuItem>
-                <MenuItem Header="_Graphical" x:Name="GraphicalView">
+                <MenuItem Header="_Dashboard" x:Name="DashboardView">
                     <MenuItem.Icon>
-                        <iconPacks:Material Kind="ChartAreaspline" />
+                        <iconPacks:Material Kind="ViewDashboardVariant" />
                     </MenuItem.Icon>
                 </MenuItem>
                 <MenuItem Header="_Data Format" x:Name="DataFormatView">

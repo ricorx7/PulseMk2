@@ -18,8 +18,9 @@ namespace RTI
         /// <param name="data">Binary data for the ensemble.</param>
         /// <param name="ensemble">Ensemble object.</param>
         /// <param name="source">Source of the ensemble.</param>
+        /// <param name="dataFormat">Original data format.</param>
         /// <returns>Error code.</returns>
-        int RecordEnsemble(byte[] data, DataSet.Ensemble ensemble, EnsembleSource source);
+        int RecordEnsemble(byte[] data, DataSet.Ensemble ensemble, EnsembleSource source, AdcpCodec.CodecEnum dataFormat);
 
     }
 }

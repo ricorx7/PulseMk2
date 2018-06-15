@@ -28,6 +28,10 @@ namespace RTI {
             container.Instance<ICodecLayer>(dataFormatVM);                              // Codec Layer Interface
             container.Instance<IDisposable>(dataFormatVM);                              // Dispose Interface
 
+            container.Singleton<DashboardViewModel, DashboardViewModel>();
+            var dashVM = container.GetInstance<DashboardViewModel>();
+            container.Instance<IProcessEnsLayer>(dashVM);                               // Process Ensemble Layer interface
+
             container.Singleton<HeatmapPlotViewModel, HeatmapPlotViewModel>();
             var heatmapVM = container.GetInstance<HeatmapPlotViewModel>();
             container.Instance<IPlotLayer>(heatmapVM);                                  // Plot Layer interface
