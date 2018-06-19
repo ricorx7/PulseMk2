@@ -47,7 +47,7 @@ namespace RTI
         /// <param name="type">Type of ensemble.</param>
         /// <param name="dataFormat">Data Format.</param>
         /// <returns>Negative number indicates an error.</returns>
-        int ProcessEnsemble(DataSet.Ensemble ensemble, EnsembleSource source, AdcpCodec.CodecEnum dataFormat);
+        ViewSubsystemConfig ProcessEnsemble(DataSet.Ensemble ensemble, EnsembleSource source, AdcpCodec.CodecEnum dataFormat);
 
     }
 }

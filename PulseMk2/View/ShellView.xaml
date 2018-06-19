@@ -7,12 +7,13 @@
                       WindowTransitionsEnabled="False"
                       WindowStartupLocation="CenterScreen"
                       ResizeMode="CanResizeWithGrip"
+                      WindowState="Maximized"
                       >
 
     <DockPanel Margin="5">
         <Menu DockPanel.Dock="Top" >
             <MenuItem Header="_File">
-                <MenuItem Header="_Open Project">
+                <MenuItem Header="_Open Project" x:Name="PlaybackFile">
                     <MenuItem.Icon>
                         <iconPacks:Material Kind="FolderOpen" />
                     </MenuItem.Icon>

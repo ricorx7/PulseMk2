@@ -1,16 +1,18 @@
 ﻿using Caliburn.Micro;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace RTI
 {
     /// <summary>
     /// Data format to decode the data.
     /// </summary>
-    public class DataFormatViewModel : Caliburn.Micro.Screen, IDisposable, ICodecLayer, IActivate, IDeactivate
+    public class DataFormatViewModel : Caliburn.Micro.Screen, IDisposable, ICodecLayer, IPlaybackLayer, IActivate, IDeactivate
     {
         #region Variables
 
@@ -375,6 +377,69 @@ namespace RTI
 
         #endregion
 
+        #region Playback File
+
+        /// <summary>
+        /// Check if the project already exist.  It will load all the ensembles to get a total number of ensembles.
+        /// It will then use the first file as the filename by default.  It will check if a similar file name
+        /// and number of ensembles.  If any match, then load that project.  If no projects match the file name and number
+        /// of ensembles, then create a new project and load it.
+        /// </summary>
+        /// <param name="filepath">File path for the project file name.</param>
+        /// <param name="ensembles">Ensembles to load into a project.</param>
+        /// <returns>Previous project or a new project.</returns>
+        public Project CreateProject(string filepath, Cache<long, DataSet.Ensemble> ensembles)
+        {
+            // Get the file name from the file path
+            string filename = Path.GetFileNameWithoutExtension(filepath);
+
+            // Create an empty project.
+            Project project = null;
+
+            if (!string.IsNullOrEmpty(filename))
+            {
+                // If the exact file exist, then we check if the file is being reloaded
+                if (File.Exists(filepath))
+                {
+                    // Get a list of all the directories with the same file name
+                    string[] dirs = Directory.GetDirectories(RTI.Commons.GetProjectDefaultFolderPath(), filename + "*");
+                    foreach (var dir in dirs)
+                    {
+                        // Create a Project object to check the number of ensembles
+                        Project prj = new Project(Path.GetFileName(dir), Path.GetDirectoryName(dir), null);
+
+                        // Check if the same number of ensembles 
+                        if (prj.GetNumberOfEnsembles() == ensembles.Count())
+                        {
+                            // This project already exist
+                            return prj;
+                        }
+                    }
+
+                    // Create a unique filename
+                    filename = filename + "_" + DateTime.Now.ToString("yyyyMMddHHmmss");
+                }
+
+                // Create the new project based off
+                // the project name and project directory
+                project = new Project(filename, RTI.Commons.GetProjectDefaultFolderPath(), null);
+
+                // Write the ensembles to the project
+                AdcpDatabaseWriter writer = new AdcpDatabaseWriter(false);
+                writer.WriteFileToDatabase(project, ensembles);
+
+                // Add project to DB
+                //AddNewProject(project);
+
+                project.Dispose();
+
+            }
+
+            return project;
+        }
+
+        #endregion
+
         #region Event Handler
 
         /// <summary>
@@ -459,6 +524,72 @@ namespace RTI
             {
                 log.Error("Error with display timer.");
             }
+        }
+
+        /// <summary>
+        /// Load the files.
+        /// </summary>
+        /// <param name="files">Files selected.</param>
+        public Project LoadFiles(string[] files)
+        {
+            // Set flag
+            //IsLoading = true;
+
+            Project project = null;
+
+            if (files.Length > 0)
+            {
+                // Create the file playback based off the selected file
+                // Try to optimize and first load the file into the Binary only codec
+                // If this does not work, then try all the codecs
+                FilePlayback fp = new FilePlayback();
+                fp.FindRtbEnsembles(files);
+
+                // Wait for ensembles to be added
+                int timeout = 10;
+                while (fp.TotalEnsembles < 0 && timeout >= 0)
+                {
+                    System.Threading.Thread.Sleep(250);
+                    timeout--;
+                }
+
+                // Check if any ensembles were found
+                if (fp.TotalEnsembles > 0)
+                {
+                    // Add the ensembles to the project
+                    // Create a project if new, or load if old
+                    project = CreateProject(files[0], fp.GetAllEnsembles());
+
+                    // Set the selected playback to the pulsemanager
+                    //_pm.SelectedProject = project;
+                    //_pm.SelectedPlayback = fp;
+                }
+                else
+                {
+                    // Find the ensembles using all the codecs
+                    fp.FindEnsembles(files);
+
+                    project = CreateProject(files[0], fp.GetAllEnsembles());
+
+                    // Set the selected playback to the pulsemanager
+                    //_pm.SelectedProject = project;
+                }
+
+                fp.Dispose();
+            }
+
+            // Reset flag
+            //IsLoading = false;
+
+            // Pass the data to all Screen layers
+            foreach (var vm in IoC.GetAllInstances(typeof(IProjectLayer)))
+            {
+                ((IProjectLayer)vm).LoadProject(project);
+            }
+
+            project.Dispose();
+
+            return project;
         }
 
         #endregion

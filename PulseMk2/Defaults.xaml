@@ -13,6 +13,9 @@
         <Rectangle Height="16" MinWidth="64" HorizontalAlignment="Center" Fill="{Binding Converter={StaticResource OxyColorToBrushConverter}}" Stroke="Black" Margin="0,1,0,1" />
     </DataTemplate>
 
+    <!-- In your resources section of the XAML -->
+    <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
     <SolidColorBrush x:Key="PulseBackground" Color="#FF407BA8" />
     <SolidColorBrush x:Key="PulseBlock" Color="White" />
 

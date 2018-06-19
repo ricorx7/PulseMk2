@@ -262,6 +262,8 @@ namespace RTI
 
         #endregion
 
+        #region Remove Ship Speed
+
         /// <summary>
         /// Remove the ship speed.
         /// </summary>
@@ -281,6 +283,8 @@ namespace RTI
                 ReplotData(SelectedPlotType);
             }
         }
+
+        #endregion
 
         #region Bottom Track Line
 

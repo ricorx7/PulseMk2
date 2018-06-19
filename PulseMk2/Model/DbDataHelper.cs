@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace RTI
 {
-    class DbDataHelper
+    public class DbDataHelper
     {
         /// <summary>
         /// Bad velocity value.

@@ -11,7 +11,7 @@
 
     
     <DockPanel>
-        <Menu DockPanel.Dock="Top">
+        <Menu DockPanel.Dock="Top" Visibility="{Binding Path=IsShowMenu, Converter={StaticResource BoolToVis}}">
             <MenuItem Header="_File">
                 <MenuItem Header="_Open" Command="{Binding OpenCommand}" ToolTip="Select a project to display." />
             </MenuItem>
@@ -71,7 +71,7 @@
             </MenuItem>
         </Menu>
 
-        <StatusBar DockPanel.Dock="Bottom">
+        <StatusBar DockPanel.Dock="Bottom" Visibility="{Binding Path=IsShowStatusbar, Converter={StaticResource BoolToVis}}">
             <StatusBarItem>
                 <TextBlock Text="{Binding FileName}" ToolTip="{Binding FileName}" Width="300" />
             </StatusBarItem>

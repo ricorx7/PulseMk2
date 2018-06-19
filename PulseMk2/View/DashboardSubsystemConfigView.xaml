@@ -5,69 +5,153 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:RTI"
              xmlns:cal="http://www.caliburnproject.org"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
              mc:Ignorable="d" 
              Background="{StaticResource PulseBackground}"
              d:DesignHeight="800" d:DesignWidth="600">
-    
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
 
-        <!--Title Bar-->
+    <ScrollViewer>
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-            <Border Grid.Column="0" Background="{StaticResource PulseBlock}" Margin="5" ToolTip="{Binding SubsystemDesc}">
-                <StackPanel>
-                    <TextBlock Text="Subsytem" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" />
-                    <TextBlock Text="{Binding SubsystemDesc}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Margin="5" />
-                    <TextBlock Text="{Binding EnsembleSource}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Margin="5" />
-                </StackPanel>
-            </Border>
+            <!--Title Bar-->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="1" Background="{StaticResource PulseBlock}" Margin="5" ToolTip="{Binding EnsembleNumber}">
-                <StackPanel>
-                    <TextBlock Text="Ensemble Number" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" />
-                    <TextBlock Text="{Binding EnsembleNumber}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="5" />
-                </StackPanel>
-            </Border>
+                <Border Grid.Row="0" Grid.Column="0" Background="{StaticResource PulseBlock}" Margin="5" ToolTip="{Binding SubsystemDesc}">
+                    <StackPanel>
+                        <TextBlock Text="Subsytem" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" />
+                        <TextBlock Text="{Binding SubsystemDesc}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" />
+                        <TextBlock Text="{Binding EnsembleSource}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Margin="0,5,0,5"  />
+                    </StackPanel>
+                </Border>
 
-            <Border Grid.Column="2" Background="{StaticResource PulseBlock}" Margin="5" ToolTip="{Binding AvgWaterVel}">
-                <StackPanel>
-                    <TextBlock Text="Average Velocity" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" />
-                    <TextBlock Text="{Binding AvgWaterVel}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="5" />
-                </StackPanel>
-            </Border>
+                <Border Grid.Row="0" Grid.Column="1" Background="{StaticResource PulseBlock}" Margin="5" ToolTip="{Binding EnsembleNumber}">
+                    <StackPanel>
+                        <TextBlock Text="Ensemble Number" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" />
+                        <TextBlock Text="{Binding EnsembleNumber}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" />
+                        <TextBlock Text="{Binding DateAndTime}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="0,5,0,5" />
+                    </StackPanel>
+                </Border>
 
-            <Border Grid.Column="3" Background="{StaticResource PulseBlock}" Margin="5" ToolTip="{Binding AvgWaterDir}">
-                <StackPanel>
-                    <TextBlock Text="Average Direction" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" />
-                    <TextBlock Text="{Binding AvgWaterDir}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="5" />
-                </StackPanel>
-            </Border>
+                <Border Grid.Row="0" Grid.Column="2" Background="{StaticResource PulseBlock}" Margin="5" ToolTip="{Binding AvgWaterVel}">
+                    <StackPanel>
+                        <TextBlock Text="Average Velocity" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" />
+                        <TextBlock Text="{Binding AvgWaterVel}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="5" />
+                    </StackPanel>
+                </Border>
 
-            <Border Grid.Column="4" Background="{StaticResource PulseBlock}" Margin="5" ToolTip="{Binding AverageDepth}">
-                <StackPanel>
-                    <TextBlock Text="Average Depth" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" />
-                    <TextBlock Text="{Binding AverageDepth}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="5" />
-                </StackPanel>
-            </Border>
+                <Border Grid.Row="0" Grid.Column="3" Background="{StaticResource PulseBlock}" Margin="5" ToolTip="{Binding AvgWaterDir}">
+                    <StackPanel>
+                        <TextBlock Text="Average Direction" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" />
+                        <TextBlock Text="{Binding AvgWaterDir}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="5" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Row="0" Grid.Column="4" Background="{StaticResource PulseBlock}" Margin="5" ToolTip="{Binding AverageDepth}">
+                    <StackPanel>
+                        <TextBlock Text="Average Depth" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" />
+                        <TextBlock Text="{Binding AverageDepth}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="5" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!--Heatmap-->
+            <Grid Grid.Row="1" Margin="2.5" MinHeight="200">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0">
+                    <ContentControl cal:View.Model="{Binding HeatmapPlot}" />
+                    <Button Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" x:Name="ExpandHeatmapPlot">
+                        <iconPacks:Material Kind="ArrowExpand"  />
+                    </Button>
+                </Grid>
+            </Grid>
+
+            <!--ShipTrack-->
+            <Grid Grid.Row="2" Margin="2.5" MinHeight="200">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0">
+                    <ContentControl cal:View.Model="{Binding ShipTrackPlot}" />
+                    <Button Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" x:Name="ExpandShipTrackPlot">
+                        <iconPacks:Material Kind="ArrowExpand"  />
+                    </Button>
+                </Grid>
+                <Grid Grid.Column="1" Margin="5,0" >
+                    <TabControl MaxHeight="350">
+                        <TabControl.Resources>
+                            <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource {x:Type TabItem}}">
+                                <Setter Property="Controls:ControlsHelper.HeaderFontSize" Value="12" />
+                            </Style>
+                        </TabControl.Resources>
+                        <TabItem Header="Earth Velocity">
+                            <ScrollViewer>
+                                <DataGrid ItemsSource="{Binding EarthVelocity}" AlternationCount="2" AlternatingRowBackground="#FFDEDEDE" />
+                            </ScrollViewer>
+                        </TabItem>
+                        <TabItem Header="Instrument Velocity">
+                            <ScrollViewer>
+                                <DataGrid ItemsSource="{Binding InstrumentVelocity}" AlternationCount="2" AlternatingRowBackground="#FFDEDEDE"/>
+                            </ScrollViewer>
+                        </TabItem>
+                        <TabItem Header="Beam Velocity">
+                            <ScrollViewer>
+                                <DataGrid ItemsSource="{Binding BeamVelocity}" AlternationCount="2" AlternatingRowBackground="#FFDEDEDE" />
+                            </ScrollViewer>
+                        </TabItem>
+                        <TabItem Header="Velocity Vector">
+                            <ScrollViewer>
+                                <DataGrid ItemsSource="{Binding VelocityVector}" AlternationCount="2" AlternatingRowBackground="#FFDEDEDE" />
+                            </ScrollViewer>
+                        </TabItem>
+                        <TabItem Header="Amplitude">
+                            <ScrollViewer>
+                                <DataGrid ItemsSource="{Binding Amplitude}" AlternationCount="2" AlternatingRowBackground="#FFDEDEDE" />
+                            </ScrollViewer>
+                        </TabItem>
+                        <TabItem Header="Correlation">
+                            <ScrollViewer>
+                                <DataGrid ItemsSource="{Binding Correlation}" AlternationCount="2" AlternatingRowBackground="#FFDEDEDE" />
+                            </ScrollViewer>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+            </Grid>
+
+            <!--TimeSeries-->
+            <Grid Grid.Row="3" Margin="2.5" MinHeight="200">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0">
+                    <ContentControl cal:View.Model="{Binding TimeSeriesPlot}" />
+                    <Button Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" x:Name="ExpandTimeSeriesPlot">
+                        <iconPacks:Material Kind="ArrowExpand"  />
+                    </Button>
+                </Grid>
+            </Grid>
+
         </Grid>
-
-        <!--Heatmap-->
-        <Grid Grid.Row="1" Margin="5" Height="200">
-            <ContentControl cal:View.Model="{Binding HeatmapPlot}" />
-        </Grid>
-
-    </Grid>
+    </ScrollViewer>
 </UserControl>

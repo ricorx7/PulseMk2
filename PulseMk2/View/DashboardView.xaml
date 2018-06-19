@@ -5,16 +5,42 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:RTI"
              xmlns:cal="http://www.caliburnproject.org"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              mc:Ignorable="d" 
              Background="{StaticResource PulseBackground}"
              d:DesignHeight="300" d:DesignWidth="300">
-    <ScrollViewer>
-        <ItemsControl ItemsSource="{Binding SsConfigList}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <ContentControl cal:View.Model="{Binding}" />
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </ScrollViewer>
+    <DockPanel>
+
+        <StatusBar DockPanel.Dock="Bottom">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="{Binding Status}" Margin="5" />
+
+            </Grid>
+        </StatusBar>
+
+        <TabControl ItemsSource="{Binding SsConfigList}" SelectedItem="{Binding SelectedSsConfig}" SelectedIndex="{Binding SelectedSsConfigIndex}">
+        <TabControl.ItemTemplate>
+            <DataTemplate>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding Header}" Margin="5" />
+                    <Button Margin="5" cal:Message.Attach="CloseTab()" cal:Action.TargetWithoutContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=TabControl}}">
+                        <iconPacks:Material Kind="CloseBox" />
+                    </Button>
+                </StackPanel>
+            </DataTemplate>
+        </TabControl.ItemTemplate>
+        <TabControl.ContentTemplate>
+            <DataTemplate>
+                <ContentControl cal:View.Model="{Binding}" />
+            </DataTemplate>
+        </TabControl.ContentTemplate>
+    </TabControl>
+
+    </DockPanel>
 </UserControl>

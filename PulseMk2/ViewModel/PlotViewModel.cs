@@ -258,6 +258,44 @@ namespace RTI
 
         #endregion
 
+        #region Visibility
+
+        /// <summary>
+        /// Show the menu bar.
+        /// </summary>
+        private bool _IsShowMenu;
+        /// <summary>
+        /// Show the menu bar.
+        /// </summary>
+        public bool IsShowMenu
+        {
+            get { return _IsShowMenu; }
+            set
+            {
+                _IsShowMenu = value;
+                NotifyOfPropertyChange(() => IsShowMenu);
+            }
+        }
+
+        /// <summary>
+        /// Show the Status bar.
+        /// </summary>
+        private bool _IsShowStatusbar;
+        /// <summary>
+        /// Show the Status bar.
+        /// </summary>
+        public bool IsShowStatusbar
+        {
+            get { return _IsShowStatusbar; }
+            set
+            {
+                _IsShowStatusbar = value;
+                NotifyOfPropertyChange(() => IsShowStatusbar);
+            }
+        }
+
+        #endregion
+
         #region Status
 
         /// <summary>
@@ -413,6 +451,9 @@ namespace RTI
             StatusProgress = 0;
             StatusProgressMax = 100;
             IsFilterData = true;
+
+            IsShowMenu = true;
+            IsShowStatusbar = true;
 
             // List of project files and subsystem
             ProjectFileList = new BindingList<FileEntry>();

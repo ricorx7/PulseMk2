@@ -26,15 +26,25 @@ namespace RTI {
             container.Singleton<DataFormatViewModel, DataFormatViewModel>();
             var dataFormatVM = container.GetInstance<DataFormatViewModel>();
             container.Instance<ICodecLayer>(dataFormatVM);                              // Codec Layer Interface
+            container.Instance<IPlaybackLayer>(dataFormatVM);                              // File Playback Layer Interface
             container.Instance<IDisposable>(dataFormatVM);                              // Dispose Interface
 
             container.Singleton<DashboardViewModel, DashboardViewModel>();
             var dashVM = container.GetInstance<DashboardViewModel>();
             container.Instance<IProcessEnsLayer>(dashVM);                               // Process Ensemble Layer interface
+            container.Instance<IProjectLayer>(dashVM);                                  // Project Layer interface
 
-            container.Singleton<HeatmapPlotViewModel, HeatmapPlotViewModel>();
+            container.PerRequest<HeatmapPlotViewModel, HeatmapPlotViewModel>();
             var heatmapVM = container.GetInstance<HeatmapPlotViewModel>();
             container.Instance<IPlotLayer>(heatmapVM);                                  // Plot Layer interface
+
+            container.PerRequest<TimeSeriesViewModel, TimeSeriesViewModel>();
+            var timeseriesVM = container.GetInstance<TimeSeriesViewModel>();
+            container.Instance<IPlotLayer>(timeseriesVM);                               // Plot Layer interface
+
+            container.PerRequest<ShipTrackPlotViewModel, ShipTrackPlotViewModel>();
+            var shiptrackVM = container.GetInstance<ShipTrackPlotViewModel>();
+            container.Instance<IPlotLayer>(shiptrackVM);                                // Plot Layer interface
         }
 
         protected override object GetInstance(Type service, string key) {
