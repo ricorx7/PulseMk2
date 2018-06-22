@@ -214,6 +214,25 @@ namespace RTI
             }
         }
 
+        /// <summary>
+        /// Serial Number.
+        /// </summary>
+        public string SerialNumber
+        {
+            get
+            {
+                if (_ensemble != null)
+                {
+                    if (_ensemble.IsEnsembleAvail)
+                    {
+                        return string.Format("{0}", _ensemble.EnsembleData.SysSerialNumber.ToString());
+                    }
+                }
+
+                return "";
+            }
+        }
+
         #endregion
 
         #region Average Data
@@ -231,7 +250,7 @@ namespace RTI
                     {
                         double depth = _ensemble.BottomTrackData.GetAverageRange();
 
-                        return string.Format("{0} m", depth.ToString("0.00"));
+                        return string.Format("{0} m  ", depth.ToString("0.00"));
                     }
                     else
                     {
@@ -278,6 +297,40 @@ namespace RTI
             }
         }
 
+        /// <summary>
+        /// Average Bottom Track boat speed.
+        /// </summary>
+        private string _AvgBtSpeed;
+        /// <summary>
+        /// Average Bottom Track boat speed.
+        /// </summary>
+        public string AvgBtSpeed
+        {
+            get { return _AvgBtSpeed; }
+            set
+            {
+                _AvgBtSpeed = value;
+                NotifyOfPropertyChange(() => AvgBtSpeed);
+            }
+        }
+
+        /// <summary>
+        /// Average GPS speed.
+        /// </summary>
+        private string _GpsSpeed;
+        /// <summary>
+        /// Average GPS speed.
+        /// </summary>
+        public string GpsSpeed
+        {
+            get { return _GpsSpeed; }
+            set
+            {
+                _GpsSpeed = value;
+                NotifyOfPropertyChange(() => GpsSpeed);
+            }
+        }
+
         #endregion
 
         #region Velocity Data
@@ -312,6 +365,420 @@ namespace RTI
         /// </summary>
         public ObservableCollection<DataGridData> Correlation { get; set; }
 
+
+        #endregion
+
+        #region Tabular Data
+
+        #region HPR
+
+        /// <summary>
+        /// Heading value.
+        /// </summary>
+        public string Heading
+        {
+            get
+            {
+                if(_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.Heading.ToString("0.00");
+                }
+                else if(_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.Heading.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Pitch value.
+        /// </summary>
+        public string Pitch
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.Pitch.ToString("0.00");
+                }
+                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.Pitch.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Roll value.
+        /// </summary>
+        public string Roll
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.Roll.ToString("0.00");
+                }
+                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.Roll.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Orientation of the ADCP value.
+        /// </summary>
+        public string Orientation
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    if (_ensemble.AncillaryData.IsUpwardFacing())
+                    {
+                        return "Upward Facing";
+                    }
+                    else
+                    {
+                        return "Downward Facing";
+                    }
+                }
+                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    if (_ensemble.BottomTrackData.IsUpwardFacing())
+                    {
+                        return "Upward Facing";
+                    }
+                    else
+                    {
+                        return "Downward Facing";
+                    }
+                }
+
+                return "";
+            }
+        }
+
+        #endregion
+
+        #region Environmental
+
+        /// <summary>
+        /// Water Temperature value.
+        /// </summary>
+        public string WaterTemp
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.WaterTemp.ToString("0.00");
+                }
+                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.WaterTemp.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// System Temperature value.
+        /// </summary>
+        public string SystemTemp
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.SystemTemp.ToString("0.00");
+                }
+                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.SystemTemp.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Pressure value.
+        /// </summary>
+        public string Pressure
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.Pressure.ToString("0.00");
+                }
+                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.Pressure.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Transducer Depth value.
+        /// </summary>
+        public string TransducerDepth
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.TransducerDepth.ToString("0.00");
+                }
+                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.TransducerDepth.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Salinity value.
+        /// </summary>
+        public string Salinity
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.Salinity.ToString("0.00");
+                }
+                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.Salinity.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Speed of Sound value.
+        /// </summary>
+        public string SpeedOfSound
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.SpeedOfSound.ToString("0.00");
+                }
+                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.SpeedOfSound.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Voltage value.
+        /// </summary>
+        public string Voltage
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsSystemSetupAvail)
+                {
+                    return _ensemble.SystemSetupData.Voltage.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        #endregion
+
+        #region Status
+
+        /// <summary>
+        /// System Status value.
+        /// </summary>
+        public string SystemStatus
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsEnsembleAvail)
+                {
+                    return _ensemble.EnsembleData.Status.ToString();
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Bottom Track Status value.
+        /// </summary>
+        public string BtStatus
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.Status.ToString();
+                }
+
+                return "";
+            }
+        }
+
+        #endregion
+
+        #region Bins
+
+        /// <summary>
+        /// Blank value.
+        /// </summary>
+        public string FirstBinRange
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.FirstBinRange.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Bin Size value.
+        /// </summary>
+        public string BinSize
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.BinSize.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Number of bins value.
+        /// </summary>
+        public string NumBins
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsEnsembleAvail)
+                {
+                    return _ensemble.EnsembleData.NumBins.ToString("0");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Number of beams value.
+        /// </summary>
+        public string NumBeams
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsEnsembleAvail)
+                {
+                    return _ensemble.EnsembleData.NumBeams.ToString("0");
+                }
+
+                return "";
+            }
+        }
+
+        #endregion
+
+        #region Pings
+
+        /// <summary>
+        /// Desired Pings value.
+        /// </summary>
+        public string DesiredPings
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsEnsembleAvail)
+                {
+                    return _ensemble.EnsembleData.DesiredPingCount.ToString("0");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Actual Pings value.
+        /// </summary>
+        public string ActualPings
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsEnsembleAvail)
+                {
+                    return _ensemble.EnsembleData.ActualPingCount.ToString("0");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// First Ping Time value.
+        /// </summary>
+        public string FirstPingTime
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.FirstPingTime.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// First Ping Time value.
+        /// </summary>
+        public string LastPingTime
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.LastPingTime.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        #endregion
 
         #endregion
 
@@ -377,6 +844,9 @@ namespace RTI
         {
             // Get the average velocity and direction
             CalcAvgVelDir();
+
+            // Get the boat speed
+            AverageBoatSpeed();
 
             // Process the Earth velocity data
             EarthVelocity.Clear();
@@ -459,6 +929,32 @@ namespace RTI
                     AvgWaterVel = string.Format("{0} m/s", avgMag.ToString("0.00"));
                 }
             }
+        }
+
+        /// <summary>
+        /// Get the Average Bottom Track Boat speed.
+        /// </summary>
+        private void AverageBoatSpeed()
+        {
+            if (_ensemble.IsBottomTrackAvail)
+            {
+                AvgBtSpeed = _ensemble.BottomTrackData.GetVelocityMagnitude().ToString("0.00") + " m/s";
+            }
+            else
+            {
+                AvgBtSpeed = "No BT Speed";
+            }
+
+            if(_ensemble.IsNmeaAvail && _ensemble.NmeaData.IsGpvtgAvail())
+            {
+                GpsSpeed = _ensemble.NmeaData.GPVTG.Speed.ToMetersPerSecond().ToString("0.00") + " m/s";
+            }
+            else
+            {
+                GpsSpeed = "No GPS Speed";
+            }
+
+
         }
 
         #endregion

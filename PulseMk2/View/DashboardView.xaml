@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:RTI"
              xmlns:cal="http://www.caliburnproject.org"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
              mc:Ignorable="d" 
              Background="{StaticResource PulseBackground}"
              d:DesignHeight="300" d:DesignWidth="300">
@@ -25,22 +26,27 @@
         </StatusBar>
 
         <TabControl ItemsSource="{Binding SsConfigList}" SelectedItem="{Binding SelectedSsConfig}" SelectedIndex="{Binding SelectedSsConfigIndex}">
-        <TabControl.ItemTemplate>
-            <DataTemplate>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{Binding Header}" Margin="5" />
-                    <Button Margin="5" cal:Message.Attach="CloseTab()" cal:Action.TargetWithoutContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=TabControl}}">
-                        <iconPacks:Material Kind="CloseBox" />
-                    </Button>
-                </StackPanel>
-            </DataTemplate>
-        </TabControl.ItemTemplate>
-        <TabControl.ContentTemplate>
-            <DataTemplate>
-                <ContentControl cal:View.Model="{Binding}" />
-            </DataTemplate>
-        </TabControl.ContentTemplate>
-    </TabControl>
+            <TabControl.Resources>
+                <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource {x:Type TabItem}}">
+                    <Setter Property="Controls:ControlsHelper.HeaderFontSize" Value="12" />
+                </Style>
+            </TabControl.Resources>
+            <TabControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Header}" Margin="5" />
+                        <Button cal:Message.Attach="CloseTab()" cal:Action.TargetWithoutContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=TabControl}}" BorderThickness="0" Background="Transparent">
+                            <iconPacks:Material Kind="CloseBox" Width="10" Height="10" />
+                        </Button>
+                    </StackPanel>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+            <TabControl.ContentTemplate>
+                <DataTemplate>
+                    <ContentControl cal:View.Model="{Binding}" />
+                </DataTemplate>
+            </TabControl.ContentTemplate>
+        </TabControl>
 
     </DockPanel>
 </UserControl>
