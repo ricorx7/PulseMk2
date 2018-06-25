@@ -8,7 +8,7 @@ using RTI.DataSet;
 
 namespace RTI
 {
-    public class DashboardViewModel : Caliburn.Micro.Screen, IProcessEnsLayer, IProjectLayer
+    public class DashboardViewModel : Caliburn.Micro.Screen, IProcessEnsLayer, IProjectLayer, IDisposable
     {
         #region Variable
 
@@ -96,6 +96,21 @@ namespace RTI
             SsConfigList = new ObservableCollection<DashboardSubsystemConfigViewModel>();
         }
 
+        /// <summary>
+        /// Shutdown the VM.
+        /// </summary>
+        public void Dispose()
+        {
+            while(_dictSsConfig.Count > 0)
+            {
+                // Set the next config
+                _SelectedSsConfig = _dictSsConfig.Values.First();
+
+                // Close the tab
+                CloseTab();
+            }
+        }
+
         #region Load Project
 
         /// <summary>
@@ -157,6 +172,9 @@ namespace RTI
 
             // Remove it from the dictionary
             _dictSsConfig.Remove(_SelectedSsConfig.Config);
+
+            // Shutdown the VM
+            _SelectedSsConfig.Dispose();
 
             // Remove it from the List
             SsConfigList.Remove(_SelectedSsConfig);

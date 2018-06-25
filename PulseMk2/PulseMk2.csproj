@@ -82,6 +82,12 @@
     <Reference Include="GMap.NET.WindowsPresentation, Version=1.8.5.0, Culture=neutral, PublicKeyToken=b85b9027b614afef, processorArchitecture=MSIL">
       <HintPath>..\packages\GMap.NET.Windows.1.8.5\lib\net40\GMap.NET.WindowsPresentation.dll</HintPath>
     </Reference>
+    <Reference Include="HelixToolkit, Version=2.2.0.0, Culture=neutral, PublicKeyToken=52aa3500039caf0d, processorArchitecture=MSIL">
+      <HintPath>..\packages\HelixToolkit.2.2.0\lib\netstandard1.1\HelixToolkit.dll</HintPath>
+    </Reference>
+    <Reference Include="HelixToolkit.Wpf, Version=2.2.0.0, Culture=neutral, PublicKeyToken=52aa3500039caf0d, processorArchitecture=MSIL">
+      <HintPath>..\packages\HelixToolkit.Wpf.2.2.0\lib\net45\HelixToolkit.Wpf.dll</HintPath>
+    </Reference>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
     </Reference>
@@ -171,7 +177,9 @@
     <Compile Include="Interfaces\IScreenEnsLayer.cs" />
     <Compile Include="Interfaces\ICodecLayer.cs" />
     <Compile Include="Interfaces\IShell.cs" />
+    <Compile Include="Model\BinPlot3D.cs" />
     <Compile Include="Model\ColorHeatMap.cs" />
+    <Compile Include="Model\ColormapBrush.cs" />
     <Compile Include="Model\Commons.cs" />
     <Compile Include="Model\DbDataHelper.cs" />
     <Compile Include="Interfaces\IPlotLayer.cs" />
@@ -179,12 +187,14 @@
     <Compile Include="Model\OxyPaletteToBrushConverter.cs" />
     <Compile Include="Model\ViewSubsystemConfig.cs" />
     <Compile Include="Options\ScreenEnsembleOptions.cs" />
+    <Compile Include="ViewModel\CompassRoseViewModel.cs" />
     <Compile Include="ViewModel\DashboardSubsystemConfigViewModel.cs" />
     <Compile Include="ViewModel\DashboardViewModel.cs" />
     <Compile Include="ViewModel\DataFormatViewModel.cs" />
     <Compile Include="ViewModel\HeatmapPlotViewModel.cs" />
     <Compile Include="ViewModel\HomeViewModel.cs" />
     <Compile Include="ViewModel\PlotViewModel.cs" />
+    <Compile Include="ViewModel\ProfilePlot3dViewModel.cs" />
     <Compile Include="ViewModel\ScreenEnsembleViewModel.cs" />
     <Compile Include="ViewModel\ShellViewModel.cs" />
     <Compile Include="App.xaml.cs">
@@ -195,6 +205,9 @@
     <Compile Include="ViewModel\TerminalAdcpViewModel.cs" />
     <Compile Include="ViewModel\TimeSeriesViewModel.cs" />
     <Compile Include="ViewModel\ViewResolvingPlotModel.cs" />
+    <Compile Include="View\CompassRoseView.xaml.cs">
+      <DependentUpon>CompassRoseView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\DashboardSubsystemConfigView.xaml.cs">
       <DependentUpon>DashboardSubsystemConfigView.xaml</DependentUpon>
     </Compile>
@@ -208,6 +221,9 @@
     <Compile Include="View\HomeView.xaml.cs">
       <DependentUpon>HomeView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\ProfilePlot3dView.xaml.cs">
+      <DependentUpon>ProfilePlot3dView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\ShipTrackPlotView.xaml.cs" />
     <Compile Include="View\TerminalAdcpView.xaml.cs">
       <DependentUpon>TerminalAdcpView.xaml</DependentUpon>
@@ -216,6 +232,10 @@
     <Page Include="Defaults.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\CompassRoseView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="View\DashboardSubsystemConfigView.xaml">
       <SubType>Designer</SubType>
@@ -234,6 +254,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="View\HomeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ProfilePlot3dView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -298,6 +322,18 @@
       <Project>{b69f49cd-cca9-4532-a4a0-e185cd3fab33}</Project>
       <Name>RTI</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\pitch_roll.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\compass_heading.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\compass_heading_indicator.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\compass_heading_invert.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.108.0\build\net46\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.108.0\build\net46\System.Data.SQLite.Core.targets')" />

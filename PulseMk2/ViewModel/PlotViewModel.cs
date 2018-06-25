@@ -439,8 +439,15 @@ namespace RTI
 
         #endregion
 
-        public PlotViewModel()
+        /// <summary>
+        /// Initialize the plot view models.
+        /// </summary>
+        /// <param name="name">Set the display name.</param>
+        public PlotViewModel(string name)
         {
+            // Set the display name used by Caliburn.Micro
+            base.DisplayName = name;
+
             // Initialize
             _firstLoad = true;
             _binSize = 0.0;

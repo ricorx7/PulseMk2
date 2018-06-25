@@ -151,24 +151,36 @@
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
 
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Heading (deg): " Margin="5,0" FontFamily="Courier New"  />
-                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Heading}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New"  />
+                                    <Grid Grid.Column="0" Margin="5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
 
-                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Pitch (deg): " Margin="5,0" FontFamily="Courier New" />
-                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Pitch}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Heading (deg): " Margin="5,0" FontFamily="Courier New"  />
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Heading}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New"  />
 
-                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Roll (deg): " Margin="5,0" FontFamily="Courier New" />
-                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Roll}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Pitch (deg): " Margin="5,0" FontFamily="Courier New" />
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Pitch}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
 
-                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Orientation: " Margin="5,0" FontFamily="Courier New" />
-                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Orientation}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Roll (deg): " Margin="5,0" FontFamily="Courier New" />
+                                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Roll}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Orientation: " Margin="5,0" FontFamily="Courier New" />
+                                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Orientation}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+                                    </Grid>
+                                    <Grid Grid.Column="1" Margin="5">
+                                        <Viewbox Width="125" Height="125">
+                                            <ContentControl cal:View.Model="{Binding CompassPlot}" Background="Black" />
+                                        </Viewbox>
+                                    </Grid>
                                 </Grid>
                             </TabItem>
                             <TabItem Header="Bins">
@@ -335,9 +347,14 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Background="{StaticResource PulseBlock}" Margin="5,0,5,5">
-                        
-                    </Border>
+                    <Grid Grid.Column="0" Background="{StaticResource PulseBlock}" Margin="5,0,5,5">
+                        <Viewbox Stretch="Fill" MaxHeight="250" VerticalAlignment="Center">
+                            <ContentControl cal:View.Model="{Binding Profile3dPlot}" />
+                        </Viewbox>
+                        <Button Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" x:Name="ExpandProfile3dPlot">
+                            <iconPacks:Material Kind="ArrowExpand"  />
+                        </Button>
+                    </Grid>
 
                     <Border Grid.Column="1" Background="{StaticResource PulseBlock}" Margin="0,0,5,5">
 

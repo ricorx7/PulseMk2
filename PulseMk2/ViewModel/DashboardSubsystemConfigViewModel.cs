@@ -9,7 +9,7 @@ using System.Windows;
 
 namespace RTI
 {
-    public class DashboardSubsystemConfigViewModel : Caliburn.Micro.Screen
+    public class DashboardSubsystemConfigViewModel : Caliburn.Micro.Screen, IDisposable
     {
         #region Variables
 
@@ -799,6 +799,16 @@ namespace RTI
         /// </summary>
         public TimeSeriesViewModel TimeSeriesPlot { get; set; }
 
+        /// <summary>
+        /// Compass Rose Plot.
+        /// </summary>
+        public CompassRoseViewModel CompassPlot { get; set; }
+
+        /// <summary>
+        /// 3D Profile Plot.
+        /// </summary>
+        public ProfilePlot3dViewModel Profile3dPlot { get; set; }
+
         #endregion
 
         #endregion
@@ -826,6 +836,10 @@ namespace RTI
             TimeSeriesPlot.IsShowMenu = false;
             TimeSeriesPlot.IsShowStatusbar = false;
 
+            CompassPlot = IoC.Get<CompassRoseViewModel>();
+
+            //Profile3dPlot = IoC.Get<ProfilePlot3dViewModel>();
+
             EarthVelocity = new ObservableCollection<DataGridData>();
             InstrumentVelocity = new ObservableCollection<DataGridData>();
             BeamVelocity = new ObservableCollection<DataGridData>();
@@ -834,6 +848,10 @@ namespace RTI
             Correlation = new ObservableCollection<DataGridData>();
         }
 
+        public void Dispose()
+        {
+            CompassPlot.Dispose();
+        }
 
         #region Process Data
 
@@ -847,6 +865,15 @@ namespace RTI
 
             // Get the boat speed
             AverageBoatSpeed();
+
+            // Add Comapss data to compass rose
+            AddCompassData();
+
+            // Plot 3D Velocity Plot
+            //Plot3dVelocityPlot();
+
+            // Update the Heatmap
+            HeatmapPlot.AddEnsemble(_ensemble);
 
             // Process the Earth velocity data
             EarthVelocity.Clear();
@@ -1026,6 +1053,49 @@ namespace RTI
                 list.Add(new VvDataGridData(bin, 
                                             Math.Round(data[bin].Magnitude, 3), 
                                             Math.Round(data[bin].DirectionYNorth, 3)));
+            }
+        }
+
+        #endregion
+
+        #region Compass Data
+
+        /// <summary>
+        /// Add compass data to the compass rose.
+        /// </summary>
+        private void AddCompassData()
+        {
+            if(_ensemble != null)
+            {
+                if(_ensemble.IsAncillaryAvail)
+                {
+                    CompassPlot.AddIncomingData(_ensemble.AncillaryData.Heading, _ensemble.AncillaryData.Pitch, _ensemble.AncillaryData.Roll);
+                }
+                else if(_ensemble.IsBottomTrackAvail)
+                {
+                    CompassPlot.AddIncomingData(_ensemble.BottomTrackData.Heading, _ensemble.BottomTrackData.Pitch, _ensemble.AncillaryData.Roll);
+                }
+            }
+        }
+
+        #endregion
+
+        #region 3D Velocity Plot
+
+        /// <summary>
+        /// Plot the 3D velocity plot.
+        /// Get the velocity vectors from the ensemble.
+        /// </summary>
+        private void Plot3dVelocityPlot()
+        {
+            if (_ensemble != null && _ensemble.IsEnsembleAvail && _ensemble.IsEarthVelocityAvail && _ensemble.EarthVelocityData.IsVelocityVectorAvail)
+            {
+                // Create struct to hold the data
+                DataSet.EnsembleVelocityVectors ensVec = new DataSet.EnsembleVelocityVectors();
+                ensVec.Id = _ensemble.EnsembleData.UniqueId;
+                ensVec.Vectors = _ensemble.EarthVelocityData.VelocityVectors;
+
+                Profile3dPlot.AddData(ensVec);
             }
         }
 

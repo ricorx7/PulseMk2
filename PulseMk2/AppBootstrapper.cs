@@ -33,6 +33,7 @@ namespace RTI {
             var dashVM = container.GetInstance<DashboardViewModel>();
             container.Instance<IProcessEnsLayer>(dashVM);                               // Process Ensemble Layer interface
             container.Instance<IProjectLayer>(dashVM);                                  // Project Layer interface
+            container.Instance<IDisposable>(dashVM);                                    // Disposable interface
 
             container.PerRequest<HeatmapPlotViewModel, HeatmapPlotViewModel>();
             var heatmapVM = container.GetInstance<HeatmapPlotViewModel>();
@@ -45,6 +46,13 @@ namespace RTI {
             container.PerRequest<ShipTrackPlotViewModel, ShipTrackPlotViewModel>();
             var shiptrackVM = container.GetInstance<ShipTrackPlotViewModel>();
             container.Instance<IPlotLayer>(shiptrackVM);                                // Plot Layer interface
+
+            container.PerRequest<CompassRoseViewModel, CompassRoseViewModel>();
+            //var compassVM = container.GetInstance<CompassRoseViewModel>();
+            ////container.Instance<IPlotLayer>(compassVM);                                // Plot Layer interface
+            //container.Instance<IDisposable>(compassVM);                                 // Dispose Interface
+
+            container.PerRequest<ProfilePlot3dViewModel, ProfilePlot3dViewModel>();
         }
 
         protected override object GetInstance(Type service, string key) {
