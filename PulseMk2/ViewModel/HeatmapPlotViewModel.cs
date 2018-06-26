@@ -641,7 +641,7 @@ namespace RTI
         /// Add the latest ensemble to the plot.
         /// </summary>
         /// <param name="ens"></param>
-        public void AddEnsemble(DataSet.Ensemble ens)
+        public override void AddEnsemble(DataSet.Ensemble ens)
         {
             PlotData data = new PlotData();
             data.ProfileData = GetEnsembleData(ens);
@@ -650,6 +650,12 @@ namespace RTI
             DrawPlot(data);
         }
 
+        /// <summary>
+        /// Get the profile data from the ensemble.
+        /// [ens, bins]
+        /// </summary>
+        /// <param name="ens">Ensemble to get the profile data.</param>
+        /// <returns>The Heatmap data.  [ens, bins].</returns>
         private double[,] GetEnsembleData(DataSet.Ensemble ens)
         {
             // Get the curernt data from the plot
@@ -1365,8 +1371,8 @@ namespace RTI
                 Color = OxyColors.Red,
                 Color2 = OxyColors.Transparent,
                 Fill = OxyColor.FromAColor(240, OxyColors.DarkGray),
+                Tag = "Bottom Track"
             };
-            series.Tag = "Bottom Track";
 
             return series;
         }

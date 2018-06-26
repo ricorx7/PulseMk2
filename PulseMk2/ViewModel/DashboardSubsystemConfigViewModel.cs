@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using OxyPlot.Series;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -790,6 +791,11 @@ namespace RTI
         public HeatmapPlotViewModel HeatmapPlot { get; set; }
 
         /// <summary>
+        /// Expanded Heatmap Plot.
+        /// </summary>
+        public HeatmapPlotViewModel HeatmapPlotExapnded { get; set; }
+
+        /// <summary>
         /// Ship Track plot.
         /// </summary>
         public ShipTrackPlotViewModel ShipTrackPlot { get; set; }
@@ -824,6 +830,7 @@ namespace RTI
             _windowMgr = IoC.Get<IWindowManager>();
 
             //HeatmapPlot = new HeatmapPlotViewModel();
+            //IoC.BuildUp(HeatmapPlot);
             HeatmapPlot = IoC.Get<HeatmapPlotViewModel>();
             HeatmapPlot.IsShowMenu = false;
             HeatmapPlot.IsShowStatusbar = false;
@@ -838,7 +845,10 @@ namespace RTI
 
             CompassPlot = IoC.Get<CompassRoseViewModel>();
 
-            //Profile3dPlot = IoC.Get<ProfilePlot3dViewModel>();
+            Application.Current.Dispatcher.Invoke((System.Action)delegate
+            {
+                Profile3dPlot = IoC.Get<ProfilePlot3dViewModel>();
+            });
 
             EarthVelocity = new ObservableCollection<DataGridData>();
             InstrumentVelocity = new ObservableCollection<DataGridData>();
@@ -870,10 +880,14 @@ namespace RTI
             AddCompassData();
 
             // Plot 3D Velocity Plot
-            //Plot3dVelocityPlot();
+            Plot3dVelocityPlot();
 
             // Update the Heatmap
             HeatmapPlot.AddEnsemble(_ensemble);
+            if(HeatmapPlotExapnded != null)
+            {
+                HeatmapPlotExapnded.AddEnsemble(_ensemble);
+            }
 
             // Process the Earth velocity data
             EarthVelocity.Clear();
@@ -1105,16 +1119,94 @@ namespace RTI
 
         #region Expand Plot
 
+        public bool CanExpandHeatmapPlot
+        {
+            get
+            {
+                if (HeatmapPlotExapnded == null)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
         public void ExpandHeatmapPlot()
         {
-            //_windowMgr.ShowWindow(IoC.Get<HeatmapPlotViewModel>(), HeatmapPlot);
-            //HeatmapPlotViewModel vm = IoC.Get<HeatmapPlotViewModel>(Config.Config.CepoIndex.ToString());
-            //_windowMgr.ShowWindow(vm);
-            //_windowMgr.ShowWindow(HeatmapPlot);
+            // Create the Heatmap plot and attach to deactivate
+            HeatmapPlotExapnded = IoC.Get<HeatmapPlotViewModel>();
+            HeatmapPlotExapnded.Deactivated += HeatmapPlotExapnded_Deactivated;
 
-            _windowMgr.ShowWindow(IoC.Get<HeatmapPlotViewModel>());
-            //_windowMgr.ShowDialog(IoC.Get<HeatmapPlotViewModel>());
-            //_windowMgr.ShowWindow(IoC.GetInstance(typeof(HeatmapPlotViewModel), Config.Config.CepoIndex.ToString()));
+            // Show the window and update the button
+            _windowMgr.ShowWindow(HeatmapPlotExapnded);
+            NotifyOfPropertyChange(() => this.CanExpandHeatmapPlot);
+
+            Application.Current.Dispatcher.Invoke((System.Action)delegate
+            {
+
+                // Lock the plot
+                lock (HeatmapPlotExapnded.Plot.SyncRoot)
+                {
+                    // Move all the data over
+                    HeatmapPlotExapnded.Plot.Series.Clear();
+
+                    // All all the data from the original Plot
+                    foreach (var series in HeatmapPlot.Plot.Series)
+                    {
+                        // Profile series
+                        if (series.GetType() == typeof(HeatMapSeries))
+                        {
+                            HeatMapSeries hmSeries = new HeatMapSeries();
+                            hmSeries.X0 = 0;                                                  // Left starts 0
+                            hmSeries.X1 = ((HeatMapSeries)series).Data.GetLength(0);          // Right (num ensembles)
+                            hmSeries.Y0 = 0;                                                  // Top starts 0
+                            hmSeries.Y1 = ((HeatMapSeries)series).Data.GetLength(1);          // Bottom end (num bins)
+                            hmSeries.Data = ((HeatMapSeries)series).Data;
+                            hmSeries.Interpolate = false;
+
+                            // Add series
+                            HeatmapPlotExapnded.Plot.Series.Add(hmSeries);
+                        }
+
+                        // Bottom Track series
+                        if (series.GetType() == typeof(AreaSeries))
+                        {
+                            AreaSeries btSeries = new AreaSeries();
+                            btSeries.Color = ((AreaSeries)series).Color;
+                            btSeries.Color2 = ((AreaSeries)series).Color2;
+                            btSeries.Fill = ((AreaSeries)series).Fill;
+                            btSeries.Tag = ((AreaSeries)series).Tag;
+
+                            foreach (var pt in ((AreaSeries)series).Points)
+                            {
+                                btSeries.Points.Add(pt);
+                            }
+                            foreach (var pt in ((AreaSeries)series).Points2)
+                            {
+                                btSeries.Points2.Add(pt);
+                            }
+
+                            // Add series
+                            HeatmapPlotExapnded.Plot.Series.Add(btSeries);
+                        }
+                    }
+                }
+
+                // Then refresh the plot
+                HeatmapPlotExapnded.Plot.InvalidatePlot(true);
+            });
+        }
+
+        /// <summary>
+        /// The Heatmap Plot Expanded is closed.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void HeatmapPlotExapnded_Deactivated(object sender, DeactivationEventArgs e)
+        {
+            HeatmapPlotExapnded = null;
+            NotifyOfPropertyChange(() => this.CanExpandHeatmapPlot);
         }
 
         #endregion

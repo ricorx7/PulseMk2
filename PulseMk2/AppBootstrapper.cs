@@ -10,7 +10,10 @@ namespace RTI {
             Initialize();
         }
 
-        protected override void Configure() {
+        protected override void Configure()
+        {
+
+
             container = new SimpleContainer();
 
             container.Singleton<IWindowManager, WindowManager>();

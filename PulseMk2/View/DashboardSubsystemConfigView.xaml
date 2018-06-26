@@ -102,7 +102,7 @@
 
                 <!--Heatmap-->
                 <Grid Grid.Column="0">
-                    <ContentControl cal:View.Model="{Binding HeatmapPlot}" />
+                    <ContentControl cal:View.Model="{Binding HeatmapPlot}"/>
                     <Button Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" x:Name="ExpandHeatmapPlot">
                         <iconPacks:Material Kind="ArrowExpand"  />
                     </Button>

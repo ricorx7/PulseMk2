@@ -964,5 +964,14 @@ namespace RTI
         {
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Add ensemble to the plot.
+        /// </summary>
+        /// <param name="ens">Ensemble to plot.</param>
+        public virtual void AddEnsemble(DataSet.Ensemble ens)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
