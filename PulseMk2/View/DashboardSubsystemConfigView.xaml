@@ -12,11 +12,10 @@
              d:DesignHeight="800" d:DesignWidth="600">
 
     <ScrollViewer>
-        <Grid>
+        <Grid Grid.IsSharedSizeScope="True">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height=".3*" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
@@ -28,130 +27,346 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
                 <Border Grid.Row="0" Grid.Column="0" Background="{StaticResource PulseBlock}" Margin="5" ToolTip="{Binding SubsystemDesc}">
                     <StackPanel>
-                        <TextBlock Text="Subsytem" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" />
-                        <TextBlock Text="{Binding SubsystemDesc}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" />
-                        <TextBlock Text="{Binding EnsembleSource}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Margin="0,5,0,5"  />
+                        <TextBlock Text="Subsytem" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" FontFamily="Courier New" />
+                        <TextBlock Text="{Binding EnsembleSource}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontFamily="Courier New"  />
+                        <Viewbox MaxWidth="175" Margin="5">
+                            <TextBlock Text="{Binding SubsystemDesc}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontFamily="Courier New" />
+                        </Viewbox>
+                        <Viewbox MaxWidth="175" Margin="5">
+                            <TextBlock Text="{Binding SerialNumber}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontFamily="Courier New" />
+                        </Viewbox>
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Row="0" Grid.Column="1" Background="{StaticResource PulseBlock}" Margin="5" ToolTip="{Binding EnsembleNumber}">
                     <StackPanel>
                         <TextBlock Text="Ensemble Number" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" />
-                        <TextBlock Text="{Binding EnsembleNumber}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" />
-                        <TextBlock Text="{Binding DateAndTime}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="0,5,0,5" />
+                        <TextBlock Text="{Binding EnsembleNumber}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontFamily="Courier New" />
+                        <Viewbox MaxWidth="175" Margin="5">
+                            <TextBlock Text="{Binding DateAndTime}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontFamily="Courier New" />
+                        </Viewbox>
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Row="0" Grid.Column="2" Background="{StaticResource PulseBlock}" Margin="5" ToolTip="{Binding AvgWaterVel}">
                     <StackPanel>
-                        <TextBlock Text="Average Velocity" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" />
-                        <TextBlock Text="{Binding AvgWaterVel}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="5" />
+                        <TextBlock Text="Average Velocity" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" FontFamily="Courier New" />
+                        <Viewbox MaxWidth="175" Margin="5">
+                            <TextBlock Text="{Binding AvgWaterVel}" FontWeight="Bold" FontFamily="Courier New" />
+                        </Viewbox>
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Row="0" Grid.Column="3" Background="{StaticResource PulseBlock}" Margin="5" ToolTip="{Binding AvgWaterDir}">
                     <StackPanel>
-                        <TextBlock Text="Average Direction" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" />
-                        <TextBlock Text="{Binding AvgWaterDir}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="5" />
+                        <TextBlock Text="Average Direction" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" FontFamily="Courier New" />
+                        <Viewbox MaxWidth="175" Margin="5">
+                            <TextBlock Text="{Binding AvgWaterDir}" FontWeight="Bold" FontFamily="Courier New" />
+                        </Viewbox>
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Row="0" Grid.Column="4" Background="{StaticResource PulseBlock}" Margin="5" ToolTip="{Binding AverageDepth}">
                     <StackPanel>
-                        <TextBlock Text="Average Depth" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" />
-                        <TextBlock Text="{Binding AverageDepth}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="5" />
+                        <TextBlock Text="Average Depth" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" FontFamily="Courier New" />
+                        <Viewbox MaxWidth="175" Margin="5">
+                            <TextBlock Text="{Binding AverageDepth}" FontWeight="Bold" FontFamily="Courier New" />
+                        </Viewbox>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Row="0" Grid.Column="5" Background="{StaticResource PulseBlock}" Margin="5" ToolTip="{Binding AvgWaterVel}">
+                    <StackPanel>
+                        <TextBlock Text="Speed" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" FontFamily="Courier New" />
+                        <Viewbox MaxWidth="175" Margin="5">
+                            <TextBlock Text="{Binding AvgBtSpeed}" FontWeight="Bold" FontFamily="Courier New" />
+                        </Viewbox>
+                        <Viewbox MaxWidth="175" Margin="5">
+                            <TextBlock Text="{Binding GpsSpeed}" FontWeight="Bold" FontFamily="Courier New" />
+                        </Viewbox>
                     </StackPanel>
                 </Border>
             </Grid>
 
-            <!--Heatmap-->
-            <Grid Grid.Row="1" Margin="2.5" MinHeight="200">
+            <!--Heatmap and Tabular-->
+            <Grid Grid.Row="1" Margin="5">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
+                <!--Heatmap-->
                 <Grid Grid.Column="0">
-                    <ContentControl cal:View.Model="{Binding HeatmapPlot}" />
+                    <ContentControl cal:View.Model="{Binding HeatmapPlot}"/>
                     <Button Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" x:Name="ExpandHeatmapPlot">
                         <iconPacks:Material Kind="ArrowExpand"  />
                     </Button>
                 </Grid>
+                
+                <!--Tabular-->
+                <Grid Grid.Column="1" VerticalAlignment="Top">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!--Status-->
+                    <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Background="{StaticResource PulseBlock}" Margin="5,0,0,5">
+                        <Grid Margin="5">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" SharedSizeGroup="Values" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="System Status: " Margin="5,0" FontFamily="Courier New" FontSize="14" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SystemStatus}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" FontSize="14" />
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Bottom Track Status: " Margin="5,0" FontFamily="Courier New" FontSize="14" />
+                            <TextBlock Grid.Row="1" Grid.Column="1"   Text="{Binding BtStatus}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" FontSize="14" ToolTip="{Binding BtStatus}" />
+                        </Grid>
+                    </Border>
+
+                    <!--Tabular-->
+                    <Border Grid.Row="1" Grid.Column="0" MinHeight="200" MaxHeight="200" Background="{StaticResource PulseBlock}" Margin="5,0,0,0">
+                        <TabControl >
+                            <TabControl.Resources>
+                                <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource {x:Type TabItem}}">
+                                    <Setter Property="Controls:ControlsHelper.HeaderFontSize" Value="12" />
+                                </Style>
+                            </TabControl.Resources>
+                            <TabItem Header="HPR">
+                                <Grid Margin="5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Grid Grid.Column="0" Margin="5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Heading (deg): " Margin="5,0" FontFamily="Courier New"  />
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Heading}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New"  />
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Pitch (deg): " Margin="5,0" FontFamily="Courier New" />
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Pitch}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Roll (deg): " Margin="5,0" FontFamily="Courier New" />
+                                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Roll}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Orientation: " Margin="5,0" FontFamily="Courier New" />
+                                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Orientation}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+                                    </Grid>
+                                    <Grid Grid.Column="1" Margin="5">
+                                        <Viewbox Width="125" Height="125">
+                                            <ContentControl cal:View.Model="{Binding CompassPlot}" Background="Black" />
+                                        </Viewbox>
+                                    </Grid>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="Bins">
+                                <Grid Margin="5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="First Bin (m): " Margin="5,0" FontFamily="Courier New"  />
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding FirstBinRange}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New"  />
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Bin Size (m): " Margin="5,0" FontFamily="Courier New" />
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding BinSize}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Num Bins: " Margin="5,0" FontFamily="Courier New" />
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding NumBins}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Num Beams: " Margin="5,0" FontFamily="Courier New" />
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding NumBeams}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="Environment">
+                                <Grid Margin="5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Water Temp (C): " Margin="5,0" FontFamily="Courier New" />
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding WaterTemp}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="System Temp (C): " Margin="5,0" FontFamily="Courier New" />
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SystemTemp}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Pressure (k): " Margin="5,0" FontFamily="Courier New"  />
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Pressure}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Tranducer Depth (m): " Margin="5,0" FontFamily="Courier New" />
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding TransducerDepth}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+
+                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Salinity (ppt): " Margin="5,0" FontFamily="Courier New"  />
+                                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Salinity}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+
+                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Speed of Sound (m/s): " Margin="5,0" FontFamily="Courier New" />
+                                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SpeedOfSound}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+
+                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Voltage (volt): " Margin="5,0" FontFamily="Courier New" />
+                                    <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Voltage}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="Pings">
+                                <Grid Margin="5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Desired Pings: " Margin="5,0" FontFamily="Courier New"  />
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding DesiredPings}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New"  />
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Actual Pings: " Margin="5,0" FontFamily="Courier New" />
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ActualPings}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="First Ping Time: " Margin="5,0" FontFamily="Courier New" />
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding FirstPingTime}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Last Ping Time: " Margin="5,0" FontFamily="Courier New" />
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding LastPingTime}" Margin="5,0" FontWeight="Bold" FontFamily="Courier New" />
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="Velocity Vector">
+                                <ScrollViewer>
+                                    <DataGrid ItemsSource="{Binding VelocityVector}" AlternationCount="2" AlternatingRowBackground="#FFDEDEDE" />
+                                </ScrollViewer>
+                            </TabItem>
+                            <TabItem Header="Earth Velocity">
+                                <ScrollViewer>
+                                    <DataGrid ItemsSource="{Binding EarthVelocity}" AlternationCount="2" AlternatingRowBackground="#FFDEDEDE" />
+                                </ScrollViewer>
+                            </TabItem>
+                            <TabItem Header="Instrument Velocity">
+                                <ScrollViewer>
+                                    <DataGrid ItemsSource="{Binding InstrumentVelocity}" AlternationCount="2" AlternatingRowBackground="#FFDEDEDE"/>
+                                </ScrollViewer>
+                            </TabItem>
+                            <TabItem Header="Beam Velocity">
+                                <ScrollViewer>
+                                    <DataGrid ItemsSource="{Binding BeamVelocity}" AlternationCount="2" AlternatingRowBackground="#FFDEDEDE" />
+                                </ScrollViewer>
+                            </TabItem>
+                            <TabItem Header="Amplitude">
+                                <ScrollViewer>
+                                    <DataGrid ItemsSource="{Binding Amplitude}" AlternationCount="2" AlternatingRowBackground="#FFDEDEDE" />
+                                </ScrollViewer>
+                            </TabItem>
+                            <TabItem Header="Correlation">
+                                <ScrollViewer>
+                                    <DataGrid ItemsSource="{Binding Correlation}" AlternationCount="2" AlternatingRowBackground="#FFDEDEDE" />
+                                </ScrollViewer>
+                            </TabItem>
+                            <TabItem Header="Bottom Track"></TabItem>
+                            <TabItem Header="Water Track"></TabItem>
+                            <TabItem Header="Range Track"></TabItem>
+                            <TabItem Header="GPS"></TabItem>
+                        </TabControl>
+                    </Border>
+                </Grid>
+
             </Grid>
 
-            <!--ShipTrack-->
-            <Grid Grid.Row="2" Margin="2.5" MinHeight="200">
+            <Grid Grid.Row="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
-                <Grid Grid.Column="0">
+                <!--Ship Track-->
+                <Grid Grid.Row="0" Grid.Column="0" MaxHeight="200" Margin="5,0,0,5">
                     <ContentControl cal:View.Model="{Binding ShipTrackPlot}" />
                     <Button Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" x:Name="ExpandShipTrackPlot">
                         <iconPacks:Material Kind="ArrowExpand"  />
                     </Button>
                 </Grid>
-                <Grid Grid.Column="1" Margin="5,0" >
-                    <TabControl MaxHeight="350">
-                        <TabControl.Resources>
-                            <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource {x:Type TabItem}}">
-                                <Setter Property="Controls:ControlsHelper.HeaderFontSize" Value="12" />
-                            </Style>
-                        </TabControl.Resources>
-                        <TabItem Header="Earth Velocity">
-                            <ScrollViewer>
-                                <DataGrid ItemsSource="{Binding EarthVelocity}" AlternationCount="2" AlternatingRowBackground="#FFDEDEDE" />
-                            </ScrollViewer>
-                        </TabItem>
-                        <TabItem Header="Instrument Velocity">
-                            <ScrollViewer>
-                                <DataGrid ItemsSource="{Binding InstrumentVelocity}" AlternationCount="2" AlternatingRowBackground="#FFDEDEDE"/>
-                            </ScrollViewer>
-                        </TabItem>
-                        <TabItem Header="Beam Velocity">
-                            <ScrollViewer>
-                                <DataGrid ItemsSource="{Binding BeamVelocity}" AlternationCount="2" AlternatingRowBackground="#FFDEDEDE" />
-                            </ScrollViewer>
-                        </TabItem>
-                        <TabItem Header="Velocity Vector">
-                            <ScrollViewer>
-                                <DataGrid ItemsSource="{Binding VelocityVector}" AlternationCount="2" AlternatingRowBackground="#FFDEDEDE" />
-                            </ScrollViewer>
-                        </TabItem>
-                        <TabItem Header="Amplitude">
-                            <ScrollViewer>
-                                <DataGrid ItemsSource="{Binding Amplitude}" AlternationCount="2" AlternatingRowBackground="#FFDEDEDE" />
-                            </ScrollViewer>
-                        </TabItem>
-                        <TabItem Header="Correlation">
-                            <ScrollViewer>
-                                <DataGrid ItemsSource="{Binding Correlation}" AlternationCount="2" AlternatingRowBackground="#FFDEDEDE" />
-                            </ScrollViewer>
-                        </TabItem>
-                    </TabControl>
-                </Grid>
-            </Grid>
 
-            <!--TimeSeries-->
-            <Grid Grid.Row="3" Margin="2.5" MinHeight="200">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <Grid Grid.Column="0">
+                <!--Time Series-->
+                <Grid Grid.Row="1" Grid.Column="0" Margin="5,0,0,5">
                     <ContentControl cal:View.Model="{Binding TimeSeriesPlot}" />
                     <Button Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" x:Name="ExpandTimeSeriesPlot">
                         <iconPacks:Material Kind="ArrowExpand"  />
                     </Button>
                 </Grid>
-            </Grid>
 
+                <Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Column="0" Background="{StaticResource PulseBlock}" Margin="5,0,5,5">
+                        <Viewbox Stretch="Fill" MaxHeight="250" VerticalAlignment="Center">
+                            <ContentControl cal:View.Model="{Binding Profile3dPlot}" />
+                        </Viewbox>
+                        <Button Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" x:Name="ExpandProfile3dPlot">
+                            <iconPacks:Material Kind="ArrowExpand"  />
+                        </Button>
+                    </Grid>
+
+                    <Border Grid.Column="1" Background="{StaticResource PulseBlock}" Margin="0,0,5,5">
+
+                    </Border>
+
+                    <Border Grid.Column="2" Background="{StaticResource PulseBlock}" Margin="0,0,0,5">
+
+                    </Border>
+
+                </Grid>
+                
+            </Grid>
         </Grid>
     </ScrollViewer>
 </UserControl>

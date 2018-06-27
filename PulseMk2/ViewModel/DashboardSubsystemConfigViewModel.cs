@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using OxyPlot.Series;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,7 +10,7 @@ using System.Windows;
 
 namespace RTI
 {
-    public class DashboardSubsystemConfigViewModel : Caliburn.Micro.Screen
+    public class DashboardSubsystemConfigViewModel : Caliburn.Micro.Screen, IDisposable
     {
         #region Variables
 
@@ -214,6 +215,25 @@ namespace RTI
             }
         }
 
+        /// <summary>
+        /// Serial Number.
+        /// </summary>
+        public string SerialNumber
+        {
+            get
+            {
+                if (_ensemble != null)
+                {
+                    if (_ensemble.IsEnsembleAvail)
+                    {
+                        return string.Format("{0}", _ensemble.EnsembleData.SysSerialNumber.ToString());
+                    }
+                }
+
+                return "";
+            }
+        }
+
         #endregion
 
         #region Average Data
@@ -231,7 +251,7 @@ namespace RTI
                     {
                         double depth = _ensemble.BottomTrackData.GetAverageRange();
 
-                        return string.Format("{0} m", depth.ToString("0.00"));
+                        return string.Format("{0} m  ", depth.ToString("0.00"));
                     }
                     else
                     {
@@ -278,6 +298,40 @@ namespace RTI
             }
         }
 
+        /// <summary>
+        /// Average Bottom Track boat speed.
+        /// </summary>
+        private string _AvgBtSpeed;
+        /// <summary>
+        /// Average Bottom Track boat speed.
+        /// </summary>
+        public string AvgBtSpeed
+        {
+            get { return _AvgBtSpeed; }
+            set
+            {
+                _AvgBtSpeed = value;
+                NotifyOfPropertyChange(() => AvgBtSpeed);
+            }
+        }
+
+        /// <summary>
+        /// Average GPS speed.
+        /// </summary>
+        private string _GpsSpeed;
+        /// <summary>
+        /// Average GPS speed.
+        /// </summary>
+        public string GpsSpeed
+        {
+            get { return _GpsSpeed; }
+            set
+            {
+                _GpsSpeed = value;
+                NotifyOfPropertyChange(() => GpsSpeed);
+            }
+        }
+
         #endregion
 
         #region Velocity Data
@@ -315,12 +369,431 @@ namespace RTI
 
         #endregion
 
+        #region Tabular Data
+
+        #region HPR
+
+        /// <summary>
+        /// Heading value.
+        /// </summary>
+        public string Heading
+        {
+            get
+            {
+                if(_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.Heading.ToString("0.00");
+                }
+                else if(_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.Heading.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Pitch value.
+        /// </summary>
+        public string Pitch
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.Pitch.ToString("0.00");
+                }
+                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.Pitch.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Roll value.
+        /// </summary>
+        public string Roll
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.Roll.ToString("0.00");
+                }
+                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.Roll.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Orientation of the ADCP value.
+        /// </summary>
+        public string Orientation
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    if (_ensemble.AncillaryData.IsUpwardFacing())
+                    {
+                        return "Upward Facing";
+                    }
+                    else
+                    {
+                        return "Downward Facing";
+                    }
+                }
+                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    if (_ensemble.BottomTrackData.IsUpwardFacing())
+                    {
+                        return "Upward Facing";
+                    }
+                    else
+                    {
+                        return "Downward Facing";
+                    }
+                }
+
+                return "";
+            }
+        }
+
+        #endregion
+
+        #region Environmental
+
+        /// <summary>
+        /// Water Temperature value.
+        /// </summary>
+        public string WaterTemp
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.WaterTemp.ToString("0.00");
+                }
+                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.WaterTemp.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// System Temperature value.
+        /// </summary>
+        public string SystemTemp
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.SystemTemp.ToString("0.00");
+                }
+                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.SystemTemp.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Pressure value.
+        /// </summary>
+        public string Pressure
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.Pressure.ToString("0.00");
+                }
+                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.Pressure.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Transducer Depth value.
+        /// </summary>
+        public string TransducerDepth
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.TransducerDepth.ToString("0.00");
+                }
+                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.TransducerDepth.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Salinity value.
+        /// </summary>
+        public string Salinity
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.Salinity.ToString("0.00");
+                }
+                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.Salinity.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Speed of Sound value.
+        /// </summary>
+        public string SpeedOfSound
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.SpeedOfSound.ToString("0.00");
+                }
+                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.SpeedOfSound.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Voltage value.
+        /// </summary>
+        public string Voltage
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsSystemSetupAvail)
+                {
+                    return _ensemble.SystemSetupData.Voltage.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        #endregion
+
+        #region Status
+
+        /// <summary>
+        /// System Status value.
+        /// </summary>
+        public string SystemStatus
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsEnsembleAvail)
+                {
+                    return _ensemble.EnsembleData.Status.ToString();
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Bottom Track Status value.
+        /// </summary>
+        public string BtStatus
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsBottomTrackAvail)
+                {
+                    return _ensemble.BottomTrackData.Status.ToString();
+                }
+
+                return "";
+            }
+        }
+
+        #endregion
+
+        #region Bins
+
+        /// <summary>
+        /// Blank value.
+        /// </summary>
+        public string FirstBinRange
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.FirstBinRange.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Bin Size value.
+        /// </summary>
+        public string BinSize
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.BinSize.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Number of bins value.
+        /// </summary>
+        public string NumBins
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsEnsembleAvail)
+                {
+                    return _ensemble.EnsembleData.NumBins.ToString("0");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Number of beams value.
+        /// </summary>
+        public string NumBeams
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsEnsembleAvail)
+                {
+                    return _ensemble.EnsembleData.NumBeams.ToString("0");
+                }
+
+                return "";
+            }
+        }
+
+        #endregion
+
+        #region Pings
+
+        /// <summary>
+        /// Desired Pings value.
+        /// </summary>
+        public string DesiredPings
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsEnsembleAvail)
+                {
+                    return _ensemble.EnsembleData.DesiredPingCount.ToString("0");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Actual Pings value.
+        /// </summary>
+        public string ActualPings
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsEnsembleAvail)
+                {
+                    return _ensemble.EnsembleData.ActualPingCount.ToString("0");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// First Ping Time value.
+        /// </summary>
+        public string FirstPingTime
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.FirstPingTime.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// First Ping Time value.
+        /// </summary>
+        public string LastPingTime
+        {
+            get
+            {
+                if (_ensemble != null && _ensemble.IsAncillaryAvail)
+                {
+                    return _ensemble.AncillaryData.LastPingTime.ToString("0.00");
+                }
+
+                return "";
+            }
+        }
+
+        #endregion
+
+        #endregion
+
         #region Plots
 
         /// <summary>
         /// Heatmap plot.
         /// </summary>
         public HeatmapPlotViewModel HeatmapPlot { get; set; }
+
+        /// <summary>
+        /// Expanded Heatmap Plot.
+        /// </summary>
+        public HeatmapPlotViewModel HeatmapPlotExapnded { get; set; }
 
         /// <summary>
         /// Ship Track plot.
@@ -331,6 +804,16 @@ namespace RTI
         /// Time series plot.
         /// </summary>
         public TimeSeriesViewModel TimeSeriesPlot { get; set; }
+
+        /// <summary>
+        /// Compass Rose Plot.
+        /// </summary>
+        public CompassRoseViewModel CompassPlot { get; set; }
+
+        /// <summary>
+        /// 3D Profile Plot.
+        /// </summary>
+        public ProfilePlot3dViewModel Profile3dPlot { get; set; }
 
         #endregion
 
@@ -347,6 +830,7 @@ namespace RTI
             _windowMgr = IoC.Get<IWindowManager>();
 
             //HeatmapPlot = new HeatmapPlotViewModel();
+            //IoC.BuildUp(HeatmapPlot);
             HeatmapPlot = IoC.Get<HeatmapPlotViewModel>();
             HeatmapPlot.IsShowMenu = false;
             HeatmapPlot.IsShowStatusbar = false;
@@ -359,6 +843,13 @@ namespace RTI
             TimeSeriesPlot.IsShowMenu = false;
             TimeSeriesPlot.IsShowStatusbar = false;
 
+            CompassPlot = IoC.Get<CompassRoseViewModel>();
+
+            Application.Current.Dispatcher.Invoke((System.Action)delegate
+            {
+                Profile3dPlot = IoC.Get<ProfilePlot3dViewModel>();
+            });
+
             EarthVelocity = new ObservableCollection<DataGridData>();
             InstrumentVelocity = new ObservableCollection<DataGridData>();
             BeamVelocity = new ObservableCollection<DataGridData>();
@@ -367,6 +858,10 @@ namespace RTI
             Correlation = new ObservableCollection<DataGridData>();
         }
 
+        public void Dispose()
+        {
+            CompassPlot.Dispose();
+        }
 
         #region Process Data
 
@@ -377,6 +872,22 @@ namespace RTI
         {
             // Get the average velocity and direction
             CalcAvgVelDir();
+
+            // Get the boat speed
+            AverageBoatSpeed();
+
+            // Add Comapss data to compass rose
+            AddCompassData();
+
+            // Plot 3D Velocity Plot
+            Plot3dVelocityPlot();
+
+            // Update the Heatmap
+            HeatmapPlot.AddEnsemble(_ensemble);
+            if(HeatmapPlotExapnded != null)
+            {
+                HeatmapPlotExapnded.AddEnsemble(_ensemble);
+            }
 
             // Process the Earth velocity data
             EarthVelocity.Clear();
@@ -461,6 +972,32 @@ namespace RTI
             }
         }
 
+        /// <summary>
+        /// Get the Average Bottom Track Boat speed.
+        /// </summary>
+        private void AverageBoatSpeed()
+        {
+            if (_ensemble.IsBottomTrackAvail)
+            {
+                AvgBtSpeed = _ensemble.BottomTrackData.GetVelocityMagnitude().ToString("0.00") + " m/s";
+            }
+            else
+            {
+                AvgBtSpeed = "No BT Speed";
+            }
+
+            if(_ensemble.IsNmeaAvail && _ensemble.NmeaData.IsGpvtgAvail())
+            {
+                GpsSpeed = _ensemble.NmeaData.GPVTG.Speed.ToMetersPerSecond().ToString("0.00") + " m/s";
+            }
+            else
+            {
+                GpsSpeed = "No GPS Speed";
+            }
+
+
+        }
+
         #endregion
 
         #region Process Velocity data
@@ -535,20 +1072,141 @@ namespace RTI
 
         #endregion
 
+        #region Compass Data
+
+        /// <summary>
+        /// Add compass data to the compass rose.
+        /// </summary>
+        private void AddCompassData()
+        {
+            if(_ensemble != null)
+            {
+                if(_ensemble.IsAncillaryAvail)
+                {
+                    CompassPlot.AddIncomingData(_ensemble.AncillaryData.Heading, _ensemble.AncillaryData.Pitch, _ensemble.AncillaryData.Roll);
+                }
+                else if(_ensemble.IsBottomTrackAvail)
+                {
+                    CompassPlot.AddIncomingData(_ensemble.BottomTrackData.Heading, _ensemble.BottomTrackData.Pitch, _ensemble.AncillaryData.Roll);
+                }
+            }
+        }
+
+        #endregion
+
+        #region 3D Velocity Plot
+
+        /// <summary>
+        /// Plot the 3D velocity plot.
+        /// Get the velocity vectors from the ensemble.
+        /// </summary>
+        private void Plot3dVelocityPlot()
+        {
+            if (_ensemble != null && _ensemble.IsEnsembleAvail && _ensemble.IsEarthVelocityAvail && _ensemble.EarthVelocityData.IsVelocityVectorAvail)
+            {
+                // Create struct to hold the data
+                DataSet.EnsembleVelocityVectors ensVec = new DataSet.EnsembleVelocityVectors();
+                ensVec.Id = _ensemble.EnsembleData.UniqueId;
+                ensVec.Vectors = _ensemble.EarthVelocityData.VelocityVectors;
+
+                Profile3dPlot.AddData(ensVec);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region Expand Plot
 
+        public bool CanExpandHeatmapPlot
+        {
+            get
+            {
+                if (HeatmapPlotExapnded == null)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
         public void ExpandHeatmapPlot()
         {
-            //_windowMgr.ShowWindow(IoC.Get<HeatmapPlotViewModel>(), HeatmapPlot);
-            //HeatmapPlotViewModel vm = IoC.Get<HeatmapPlotViewModel>(Config.Config.CepoIndex.ToString());
-            //_windowMgr.ShowWindow(vm);
-            //_windowMgr.ShowWindow(HeatmapPlot);
+            // Create the Heatmap plot and attach to deactivate
+            HeatmapPlotExapnded = IoC.Get<HeatmapPlotViewModel>();
+            HeatmapPlotExapnded.Deactivated += HeatmapPlotExapnded_Deactivated;
 
-            _windowMgr.ShowWindow(IoC.Get<HeatmapPlotViewModel>());
-            //_windowMgr.ShowDialog(IoC.Get<HeatmapPlotViewModel>());
-            //_windowMgr.ShowWindow(IoC.GetInstance(typeof(HeatmapPlotViewModel), Config.Config.CepoIndex.ToString()));
+            // Show the window and update the button
+            _windowMgr.ShowWindow(HeatmapPlotExapnded);
+            NotifyOfPropertyChange(() => this.CanExpandHeatmapPlot);
+
+            Application.Current.Dispatcher.Invoke((System.Action)delegate
+            {
+
+                // Lock the plot
+                lock (HeatmapPlotExapnded.Plot.SyncRoot)
+                {
+                    // Move all the data over
+                    HeatmapPlotExapnded.Plot.Series.Clear();
+
+                    // All all the data from the original Plot
+                    foreach (var series in HeatmapPlot.Plot.Series)
+                    {
+                        // Profile series
+                        if (series.GetType() == typeof(HeatMapSeries))
+                        {
+                            HeatMapSeries hmSeries = new HeatMapSeries();
+                            hmSeries.X0 = 0;                                                  // Left starts 0
+                            hmSeries.X1 = ((HeatMapSeries)series).Data.GetLength(0);          // Right (num ensembles)
+                            hmSeries.Y0 = 0;                                                  // Top starts 0
+                            hmSeries.Y1 = ((HeatMapSeries)series).Data.GetLength(1);          // Bottom end (num bins)
+                            hmSeries.Data = ((HeatMapSeries)series).Data;
+                            hmSeries.Interpolate = false;
+
+                            // Add series
+                            HeatmapPlotExapnded.Plot.Series.Add(hmSeries);
+                        }
+
+                        // Bottom Track series
+                        if (series.GetType() == typeof(AreaSeries))
+                        {
+                            AreaSeries btSeries = new AreaSeries();
+                            btSeries.Color = ((AreaSeries)series).Color;
+                            btSeries.Color2 = ((AreaSeries)series).Color2;
+                            btSeries.Fill = ((AreaSeries)series).Fill;
+                            btSeries.Tag = ((AreaSeries)series).Tag;
+
+                            foreach (var pt in ((AreaSeries)series).Points)
+                            {
+                                btSeries.Points.Add(pt);
+                            }
+                            foreach (var pt in ((AreaSeries)series).Points2)
+                            {
+                                btSeries.Points2.Add(pt);
+                            }
+
+                            // Add series
+                            HeatmapPlotExapnded.Plot.Series.Add(btSeries);
+                        }
+                    }
+                }
+
+                // Then refresh the plot
+                HeatmapPlotExapnded.Plot.InvalidatePlot(true);
+            });
+        }
+
+        /// <summary>
+        /// The Heatmap Plot Expanded is closed.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void HeatmapPlotExapnded_Deactivated(object sender, DeactivationEventArgs e)
+        {
+            HeatmapPlotExapnded = null;
+            NotifyOfPropertyChange(() => this.CanExpandHeatmapPlot);
         }
 
         #endregion

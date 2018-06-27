@@ -527,6 +527,7 @@ namespace RTI
         /// Initialize the map.
         /// </summary>
         public ShipTrackPlotViewModel()
+            : base("Ship Track Plot")
         {
             // Create the plot
             //Plot = CreatePlot();

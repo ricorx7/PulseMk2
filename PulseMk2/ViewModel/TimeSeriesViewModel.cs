@@ -320,6 +320,7 @@ namespace RTI
         /// Initialize the VM.
         /// </summary>
         public TimeSeriesViewModel()
+            : base("Time Series Plot")
         {
             // Create the plot
             Plot = CreatePlot();

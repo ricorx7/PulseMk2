@@ -410,7 +410,7 @@ namespace RTI
         /// Initialize the plot.
         /// </summary>
         public HeatmapPlotViewModel()
-            : base()
+            : base("Heatmap")
         {
             // Initialize
             ProjectFilePath = "";
@@ -631,6 +631,193 @@ namespace RTI
             result.BottomTrackData = btSeries;
 
             return result;
+        }
+
+        #endregion
+
+        #region Ensemble Data
+
+        /// <summary>
+        /// Add the latest ensemble to the plot.
+        /// </summary>
+        /// <param name="ens"></param>
+        public override void AddEnsemble(DataSet.Ensemble ens)
+        {
+            PlotData data = new PlotData();
+            data.ProfileData = GetEnsembleData(ens);
+
+            // Draw the plot
+            DrawPlot(data);
+        }
+
+        /// <summary>
+        /// Get the profile data from the ensemble.
+        /// [ens, bins]
+        /// </summary>
+        /// <param name="ens">Ensemble to get the profile data.</param>
+        /// <returns>The Heatmap data.  [ens, bins].</returns>
+        private double[,] GetEnsembleData(DataSet.Ensemble ens)
+        {
+            // Get the curernt data from the plot
+            double[,] origData = null;
+            foreach (var series in Plot.Series)
+            {
+                if (series.GetType() == typeof(HeatMapSeries))
+                {
+                    origData = ((HeatMapSeries)series).Data;
+                }
+            }
+
+            switch (_SelectedPlotType)
+            {
+                case PlotDataType.Magnitude:
+                    return AppendMagData(ens, origData);
+                case PlotDataType.Direction:
+                    return AppendDirData(ens, origData);
+                case PlotDataType.Amplitude:
+                    return AppendAmpData(ens, origData);
+                default:
+                    return null;
+            }
+        }
+
+        /// <summary>
+        /// Get the Magnitude data.  Then combine it with the original data.
+        /// </summary>
+        /// <param name="ens">Ensemble to get the data.</param>
+        /// <param name="origData">Original data already in the plot.</param>
+        /// <returns>New 2D array with the new data added as a column.</returns>
+        private double[,] AppendMagData(DataSet.Ensemble ens, double[,] origData)
+        {
+            // Get the mag data from the ensemble
+            double[] magData = null;
+            if (ens != null && ens.IsEarthVelocityAvail && ens.EarthVelocityData.IsVelocityVectorAvail)
+            {
+                magData = new double[ens.EarthVelocityData.VelocityVectors.Length];
+                for(int x = 0; x < ens.EarthVelocityData.VelocityVectors.Length; x++)
+                {
+                    magData[x] = ens.EarthVelocityData.VelocityVectors[x].Magnitude;
+                }
+            }
+
+            // Combine the data
+            if (origData != null && magData != null)
+            {
+                return MathHelper.AddColumn(origData, magData);
+            }
+            else if (origData == null && magData != null)
+            {
+                double[,] result = new double[1, magData.Length];
+                for (int x = 0; x < magData.Length; x++)
+                {
+                    result[0, x] = magData[x];      // [ens x bins]
+                }
+                return result;
+            }
+            else
+            {
+                return origData;
+            }
+
+
+        }
+
+        /// <summary>
+        /// Get the Direction data.  Then combine it with the original data.
+        /// </summary>
+        /// <param name="ens">Ensemble to get the data.</param>
+        /// <param name="origData">Original data already in the plot.</param>
+        /// <returns>New 2D array with the new data added as a column.</returns>
+        private double[,] AppendDirData(DataSet.Ensemble ens, double[,] origData)
+        {
+            // Get the mag data from the ensemble
+            double[] dirData = null;
+            if (ens != null && ens.IsEarthVelocityAvail && ens.EarthVelocityData.IsVelocityVectorAvail)
+            {
+                dirData = new double[ens.EarthVelocityData.VelocityVectors.Length];
+                for (int x = 0; x < ens.EarthVelocityData.VelocityVectors.Length; x++)
+                {
+                    dirData[x] = ens.EarthVelocityData.VelocityVectors[x].DirectionYNorth;
+                }
+            }
+
+            // Combine the data
+            if (origData != null && dirData != null)
+            {
+                return MathHelper.AddColumn(origData, dirData);
+            }
+            else if(origData == null && dirData != null)
+            {
+                double[,] result = new double[1, dirData.Length];
+                for(int x = 0; x < dirData.Length; x++)
+                {
+                    result[0, x] = dirData[x];
+                }
+                return result;
+            }
+            else
+            {
+                return origData;
+            }
+
+
+        }
+
+        /// <summary>
+        /// Get the Amplitude data.  Then combine it with the original data.
+        /// </summary>
+        /// <param name="ens">Ensemble to get the data.</param>
+        /// <param name="origData">Original data already in the plot.</param>
+        /// <returns>New 2D array with the new data added as a column.</returns>
+        private double[,] AppendAmpData(DataSet.Ensemble ens, double[,] origData)
+        {
+            // Get the mag data from the ensemble
+            double[] ampData = null;
+            if (ens != null && ens.IsAmplitudeAvail)
+            {
+                ampData = new double[ens.AmplitudeData.AmplitudeData.GetLength(0)];
+                for (int bin = 0; bin < ens.AmplitudeData.AmplitudeData.GetLength(0); bin++)
+                {
+                    float accum = 0.0f;
+                    int count = 0;
+                    for (int beam = 0; beam < ens.AmplitudeData.AmplitudeData.GetLength(1); beam++)
+                    {
+                        // Accumulate the Amp data to average
+                        accum += ens.AmplitudeData.AmplitudeData[bin, beam];
+                        count++;
+                    }
+
+                    // Average data
+                    float avg = 0.0f;
+                    if (count > 0)
+                    {
+                        avg = accum / count;
+                    }
+
+                    ampData[bin] = avg;
+                }
+            }
+
+            // Combine the data
+            if (origData != null && ampData != null)
+            {
+                return MathHelper.AddColumn(origData, ampData);
+            }
+            else if (origData == null && ampData != null)
+            {
+                double[,] result = new double[1, ampData.Length];
+                for (int x = 0; x < ampData.Length; x++)
+                {
+                    result[0, x] = ampData[x];
+                }
+                return result;
+            }
+            else
+            {
+                return origData;
+            }
+
+
         }
 
         #endregion
@@ -983,26 +1170,36 @@ namespace RTI
                         return;
                     }
 
-                    // If there is no data, do not plot
-                    if (data != null)
-                    {
-                        // Update status
-                        StatusMsg = "Drawing Plot";
-
-                        // Plot the Profile data from the project
-                        await Task.Run(() => PlotProfileData(data.ProfileData));
-
-                        // Plot the Bottom Track data from the project
-                        await Task.Run(() => PlotBtSeries(data.BottomTrackData));
-
-                        // Reset the axis to set the meters axis
-                        await Task.Run(() => Plot.ResetAllAxes());
-                    }
-                    else
-                    {
-                        StatusMsg = "No data to plot";
-                    }
+                    // Plot the data
+                    DrawPlot(data);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Draw the plot with the given plot data.
+        /// </summary>
+        /// <param name="data"></param>
+        private async void DrawPlot(PlotData data)
+        {
+            // If there is no data, do not plot
+            if (data != null)
+            {
+                // Update status
+                StatusMsg = "Drawing Plot";
+
+                // Plot the Profile data from the project
+                await Task.Run(() => PlotProfileData(data.ProfileData));
+
+                // Plot the Bottom Track data from the project
+                await Task.Run(() => PlotBtSeries(data.BottomTrackData));
+
+                // Reset the axis to set the meters axis
+                await Task.Run(() => Plot.ResetAllAxes());
+            }
+            else
+            {
+                StatusMsg = "No data to plot";
             }
         }
 
@@ -1012,6 +1209,7 @@ namespace RTI
 
         /// <summary>
         /// Plot the given data.
+        /// [ens x bin]
         /// </summary>
         /// <param name="data">Data to plot by creating a series.</param>
         private void PlotProfileData(double[,] data)
@@ -1145,6 +1343,11 @@ namespace RTI
         /// </summary>
         private void PlotBtSeries(AreaSeries series)
         {
+            if(series == null)
+            {
+                return;
+            }
+
             // Lock the plot for an update
             lock (Plot.SyncRoot)
             {
@@ -1168,8 +1371,8 @@ namespace RTI
                 Color = OxyColors.Red,
                 Color2 = OxyColors.Transparent,
                 Fill = OxyColor.FromAColor(240, OxyColors.DarkGray),
+                Tag = "Bottom Track"
             };
-            series.Tag = "Bottom Track";
 
             return series;
         }
