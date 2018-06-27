@@ -39,16 +39,16 @@ namespace RTI {
             container.Instance<IDisposable>(dashVM);                                    // Disposable interface
 
             container.PerRequest<HeatmapPlotViewModel, HeatmapPlotViewModel>();
-            var heatmapVM = container.GetInstance<HeatmapPlotViewModel>();
-            container.Instance<IPlotLayer>(heatmapVM);                                  // Plot Layer interface
+            //var heatmapVM = container.GetInstance<HeatmapPlotViewModel>();
+            //container.Instance<IPlotLayer>(heatmapVM);                                  // Plot Layer interface
 
             container.PerRequest<TimeSeriesViewModel, TimeSeriesViewModel>();
-            var timeseriesVM = container.GetInstance<TimeSeriesViewModel>();
-            container.Instance<IPlotLayer>(timeseriesVM);                               // Plot Layer interface
+            //var timeseriesVM = container.GetInstance<TimeSeriesViewModel>();
+            //container.Instance<IPlotLayer>(timeseriesVM);                               // Plot Layer interface
 
             container.PerRequest<ShipTrackPlotViewModel, ShipTrackPlotViewModel>();
-            var shiptrackVM = container.GetInstance<ShipTrackPlotViewModel>();
-            container.Instance<IPlotLayer>(shiptrackVM);                                // Plot Layer interface
+            //var shiptrackVM = container.GetInstance<ShipTrackPlotViewModel>();
+            //container.Instance<IPlotLayer>(shiptrackVM);                                // Plot Layer interface
 
             container.PerRequest<CompassRoseViewModel, CompassRoseViewModel>();
             //var compassVM = container.GetInstance<CompassRoseViewModel>();
@@ -56,6 +56,8 @@ namespace RTI {
             //container.Instance<IDisposable>(compassVM);                                 // Dispose Interface
 
             container.PerRequest<ProfilePlot3dViewModel, ProfilePlot3dViewModel>();
+
+            container.PerRequest<TabularViewModel, TabularViewModel>();
         }
 
         protected override object GetInstance(Type service, string key) {

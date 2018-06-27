@@ -1270,5 +1270,73 @@ namespace RTI
 
         #endregion
 
+        #region Duplicate Plot
+
+        /// <summary>
+        /// Duplicate the plot from the given plot.
+        /// </summary>
+        /// <param name="vm">Original plot.</param>
+        public void DuplicatePlot(TimeSeriesViewModel vm)
+        {
+            lock (Plot.SyncRoot)
+            {
+                // Clear the current points
+                Plot.Series.Clear();
+                Plot.Axes.Clear();
+            }
+
+
+            // Axis
+            foreach (var axis in vm.Plot.Axes)
+            {
+                if(axis.GetType() == typeof(LinearAxis))
+                {
+                    LinearAxis newAxis = new LinearAxis();
+                    newAxis.Position = ((LinearAxis)axis).Position;
+                    newAxis.TickStyle = ((LinearAxis)axis).TickStyle;                               // Put tick lines inside the plot
+                    newAxis.MinimumPadding = ((LinearAxis)axis).MinimumPadding;                                                 // Start at axis edge   
+                    newAxis.MaximumPadding = ((LinearAxis)axis).MaximumPadding;                                                 // Start at axis edge
+                    newAxis.Unit = ((LinearAxis)axis).Unit;
+                    newAxis.StartPosition = ((LinearAxis)axis).StartPosition;
+                    newAxis.EndPosition = ((LinearAxis)axis).EndPosition;
+
+                    lock (Plot.SyncRoot)
+                    {
+                        // Add it to the plot
+                        Plot.Axes.Add(newAxis);
+                    }
+                }
+            }
+
+                // Line series
+                foreach (var vmSeries in vm.Plot.Series)
+            {
+                if (vmSeries.GetType() == typeof(LineSeries))
+                {
+                    // Create a Line series
+                    LineSeries series = new LineSeries();
+                    series.Title = vmSeries.Title;
+                    series.Color = ((LineSeries)vmSeries).Color;
+
+                    // Add data to the series
+                    foreach (var pt in ((LineSeries)vmSeries).Points)
+                    {
+                        series.Points.Add(new DataPoint(pt.X, pt.Y));
+                    }
+
+                    lock (Plot.SyncRoot)
+                    {
+                        // Add it to the plot
+                        Plot.Series.Add(series);
+                    }
+                }
+            }
+
+            // Update plot
+            Plot.InvalidatePlot(true);
+        }
+
+        #endregion
+
     }
 }

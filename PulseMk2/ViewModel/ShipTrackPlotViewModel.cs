@@ -1062,8 +1062,6 @@ namespace RTI
                 }
             }
 
-
-
             // Plot the path that we taken
             GMapRoute route = new GMapRoute(points);
             System.Windows.Media.SolidColorBrush routeBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Red);
@@ -1183,6 +1181,18 @@ namespace RTI
 
             // Replot the data
             ReplotData();
+        }
+
+        #endregion
+
+        #region Duplicate Plot
+
+        public void DuplicatePlot(ShipTrackPlotViewModel vm)
+        {
+            foreach(var marker in vm.Markers)
+            {
+                Markers.Add(marker);
+            }
         }
 
         #endregion

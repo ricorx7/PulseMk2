@@ -43,6 +43,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace RTI
 {
@@ -1511,6 +1512,68 @@ namespace RTI
             PaletteList.Add(OxyPalettes.HueDistinct(64));
             PaletteList.Add(OxyPalettes.Jet(64));
             PaletteList.Add(OxyPalettes.Rainbow(64));
+        }
+
+        #endregion
+
+        #region Duplicate Plot
+
+        public void DuplicatePlot(HeatmapPlotViewModel vm)
+        {
+            Application.Current.Dispatcher.Invoke((System.Action)delegate
+            {
+
+                // Lock the plot
+                lock (Plot.SyncRoot)
+                {
+                    // Move all the data over
+                    Plot.Series.Clear();
+
+                    // All all the data from the original Plot
+                    foreach (var series in vm.Plot.Series)
+                    {
+                        // Profile series
+                        if (series.GetType() == typeof(HeatMapSeries))
+                        {
+                            HeatMapSeries hmSeries = new HeatMapSeries();
+                            hmSeries.X0 = 0;                                                  // Left starts 0
+                            hmSeries.X1 = ((HeatMapSeries)series).Data.GetLength(0);          // Right (num ensembles)
+                            hmSeries.Y0 = 0;                                                  // Top starts 0
+                            hmSeries.Y1 = ((HeatMapSeries)series).Data.GetLength(1);          // Bottom end (num bins)
+                            hmSeries.Data = ((HeatMapSeries)series).Data;
+                            hmSeries.Interpolate = false;
+
+                            // Add series
+                            Plot.Series.Add(hmSeries);
+                        }
+
+                        // Bottom Track series
+                        if (series.GetType() == typeof(AreaSeries))
+                        {
+                            AreaSeries btSeries = new AreaSeries();
+                            btSeries.Color = ((AreaSeries)series).Color;
+                            btSeries.Color2 = ((AreaSeries)series).Color2;
+                            btSeries.Fill = ((AreaSeries)series).Fill;
+                            btSeries.Tag = ((AreaSeries)series).Tag;
+
+                            foreach (var pt in ((AreaSeries)series).Points)
+                            {
+                                btSeries.Points.Add(pt);
+                            }
+                            foreach (var pt in ((AreaSeries)series).Points2)
+                            {
+                                btSeries.Points2.Add(pt);
+                            }
+
+                            // Add series
+                            Plot.Series.Add(btSeries);
+                        }
+                    }
+                }
+
+                // Then refresh the plot
+                Plot.InvalidatePlot(true);
+            });
         }
 
         #endregion

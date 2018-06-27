@@ -3,6 +3,7 @@ using OxyPlot.Series;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -369,420 +370,6 @@ namespace RTI
 
         #endregion
 
-        #region Tabular Data
-
-        #region HPR
-
-        /// <summary>
-        /// Heading value.
-        /// </summary>
-        public string Heading
-        {
-            get
-            {
-                if(_ensemble != null && _ensemble.IsAncillaryAvail)
-                {
-                    return _ensemble.AncillaryData.Heading.ToString("0.00");
-                }
-                else if(_ensemble != null && _ensemble.IsBottomTrackAvail)
-                {
-                    return _ensemble.BottomTrackData.Heading.ToString("0.00");
-                }
-
-                return "";
-            }
-        }
-
-        /// <summary>
-        /// Pitch value.
-        /// </summary>
-        public string Pitch
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsAncillaryAvail)
-                {
-                    return _ensemble.AncillaryData.Pitch.ToString("0.00");
-                }
-                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
-                {
-                    return _ensemble.BottomTrackData.Pitch.ToString("0.00");
-                }
-
-                return "";
-            }
-        }
-
-        /// <summary>
-        /// Roll value.
-        /// </summary>
-        public string Roll
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsAncillaryAvail)
-                {
-                    return _ensemble.AncillaryData.Roll.ToString("0.00");
-                }
-                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
-                {
-                    return _ensemble.BottomTrackData.Roll.ToString("0.00");
-                }
-
-                return "";
-            }
-        }
-
-        /// <summary>
-        /// Orientation of the ADCP value.
-        /// </summary>
-        public string Orientation
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsAncillaryAvail)
-                {
-                    if (_ensemble.AncillaryData.IsUpwardFacing())
-                    {
-                        return "Upward Facing";
-                    }
-                    else
-                    {
-                        return "Downward Facing";
-                    }
-                }
-                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
-                {
-                    if (_ensemble.BottomTrackData.IsUpwardFacing())
-                    {
-                        return "Upward Facing";
-                    }
-                    else
-                    {
-                        return "Downward Facing";
-                    }
-                }
-
-                return "";
-            }
-        }
-
-        #endregion
-
-        #region Environmental
-
-        /// <summary>
-        /// Water Temperature value.
-        /// </summary>
-        public string WaterTemp
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsAncillaryAvail)
-                {
-                    return _ensemble.AncillaryData.WaterTemp.ToString("0.00");
-                }
-                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
-                {
-                    return _ensemble.BottomTrackData.WaterTemp.ToString("0.00");
-                }
-
-                return "";
-            }
-        }
-
-        /// <summary>
-        /// System Temperature value.
-        /// </summary>
-        public string SystemTemp
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsAncillaryAvail)
-                {
-                    return _ensemble.AncillaryData.SystemTemp.ToString("0.00");
-                }
-                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
-                {
-                    return _ensemble.BottomTrackData.SystemTemp.ToString("0.00");
-                }
-
-                return "";
-            }
-        }
-
-        /// <summary>
-        /// Pressure value.
-        /// </summary>
-        public string Pressure
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsAncillaryAvail)
-                {
-                    return _ensemble.AncillaryData.Pressure.ToString("0.00");
-                }
-                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
-                {
-                    return _ensemble.BottomTrackData.Pressure.ToString("0.00");
-                }
-
-                return "";
-            }
-        }
-
-        /// <summary>
-        /// Transducer Depth value.
-        /// </summary>
-        public string TransducerDepth
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsAncillaryAvail)
-                {
-                    return _ensemble.AncillaryData.TransducerDepth.ToString("0.00");
-                }
-                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
-                {
-                    return _ensemble.BottomTrackData.TransducerDepth.ToString("0.00");
-                }
-
-                return "";
-            }
-        }
-
-        /// <summary>
-        /// Salinity value.
-        /// </summary>
-        public string Salinity
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsAncillaryAvail)
-                {
-                    return _ensemble.AncillaryData.Salinity.ToString("0.00");
-                }
-                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
-                {
-                    return _ensemble.BottomTrackData.Salinity.ToString("0.00");
-                }
-
-                return "";
-            }
-        }
-
-        /// <summary>
-        /// Speed of Sound value.
-        /// </summary>
-        public string SpeedOfSound
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsAncillaryAvail)
-                {
-                    return _ensemble.AncillaryData.SpeedOfSound.ToString("0.00");
-                }
-                else if (_ensemble != null && _ensemble.IsBottomTrackAvail)
-                {
-                    return _ensemble.BottomTrackData.SpeedOfSound.ToString("0.00");
-                }
-
-                return "";
-            }
-        }
-
-        /// <summary>
-        /// Voltage value.
-        /// </summary>
-        public string Voltage
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsSystemSetupAvail)
-                {
-                    return _ensemble.SystemSetupData.Voltage.ToString("0.00");
-                }
-
-                return "";
-            }
-        }
-
-        #endregion
-
-        #region Status
-
-        /// <summary>
-        /// System Status value.
-        /// </summary>
-        public string SystemStatus
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsEnsembleAvail)
-                {
-                    return _ensemble.EnsembleData.Status.ToString();
-                }
-
-                return "";
-            }
-        }
-
-        /// <summary>
-        /// Bottom Track Status value.
-        /// </summary>
-        public string BtStatus
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsBottomTrackAvail)
-                {
-                    return _ensemble.BottomTrackData.Status.ToString();
-                }
-
-                return "";
-            }
-        }
-
-        #endregion
-
-        #region Bins
-
-        /// <summary>
-        /// Blank value.
-        /// </summary>
-        public string FirstBinRange
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsAncillaryAvail)
-                {
-                    return _ensemble.AncillaryData.FirstBinRange.ToString("0.00");
-                }
-
-                return "";
-            }
-        }
-
-        /// <summary>
-        /// Bin Size value.
-        /// </summary>
-        public string BinSize
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsAncillaryAvail)
-                {
-                    return _ensemble.AncillaryData.BinSize.ToString("0.00");
-                }
-
-                return "";
-            }
-        }
-
-        /// <summary>
-        /// Number of bins value.
-        /// </summary>
-        public string NumBins
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsEnsembleAvail)
-                {
-                    return _ensemble.EnsembleData.NumBins.ToString("0");
-                }
-
-                return "";
-            }
-        }
-
-        /// <summary>
-        /// Number of beams value.
-        /// </summary>
-        public string NumBeams
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsEnsembleAvail)
-                {
-                    return _ensemble.EnsembleData.NumBeams.ToString("0");
-                }
-
-                return "";
-            }
-        }
-
-        #endregion
-
-        #region Pings
-
-        /// <summary>
-        /// Desired Pings value.
-        /// </summary>
-        public string DesiredPings
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsEnsembleAvail)
-                {
-                    return _ensemble.EnsembleData.DesiredPingCount.ToString("0");
-                }
-
-                return "";
-            }
-        }
-
-        /// <summary>
-        /// Actual Pings value.
-        /// </summary>
-        public string ActualPings
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsEnsembleAvail)
-                {
-                    return _ensemble.EnsembleData.ActualPingCount.ToString("0");
-                }
-
-                return "";
-            }
-        }
-
-        /// <summary>
-        /// First Ping Time value.
-        /// </summary>
-        public string FirstPingTime
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsAncillaryAvail)
-                {
-                    return _ensemble.AncillaryData.FirstPingTime.ToString("0.00");
-                }
-
-                return "";
-            }
-        }
-
-        /// <summary>
-        /// First Ping Time value.
-        /// </summary>
-        public string LastPingTime
-        {
-            get
-            {
-                if (_ensemble != null && _ensemble.IsAncillaryAvail)
-                {
-                    return _ensemble.AncillaryData.LastPingTime.ToString("0.00");
-                }
-
-                return "";
-            }
-        }
-
-        #endregion
-
-        #endregion
-
         #region Plots
 
         /// <summary>
@@ -801,19 +388,34 @@ namespace RTI
         public ShipTrackPlotViewModel ShipTrackPlot { get; set; }
 
         /// <summary>
+        /// Expanded Ship Track plot.
+        /// </summary>
+        public ShipTrackPlotViewModel ShipTrackPlotExpanded { get; set; }
+
+        /// <summary>
         /// Time series plot.
         /// </summary>
         public TimeSeriesViewModel TimeSeriesPlot { get; set; }
 
         /// <summary>
-        /// Compass Rose Plot.
+        /// Expanded Time series plot.
         /// </summary>
-        public CompassRoseViewModel CompassPlot { get; set; }
+        public TimeSeriesViewModel TimeSeriesPlotExpanded { get; set; }
 
         /// <summary>
         /// 3D Profile Plot.
         /// </summary>
         public ProfilePlot3dViewModel Profile3dPlot { get; set; }
+
+        /// <summary>
+        /// Tabular data and compass rose.
+        /// </summary>
+        public TabularViewModel TabularData { get; set; }
+
+        /// <summary>
+        /// Tabular data and compass rose.
+        /// </summary>
+        public TabularViewModel TabularDataExpanded { get; set; }
 
         #endregion
 
@@ -829,21 +431,23 @@ namespace RTI
 
             _windowMgr = IoC.Get<IWindowManager>();
 
-            //HeatmapPlot = new HeatmapPlotViewModel();
-            //IoC.BuildUp(HeatmapPlot);
             HeatmapPlot = IoC.Get<HeatmapPlotViewModel>();
             HeatmapPlot.IsShowMenu = false;
             HeatmapPlot.IsShowStatusbar = false;
+            HeatmapPlotExapnded = null;
 
             ShipTrackPlot = IoC.Get<ShipTrackPlotViewModel>();
             ShipTrackPlot.IsShowMenu = false;
             ShipTrackPlot.IsShowStatusbar = false;
+            ShipTrackPlotExpanded = null;
 
             TimeSeriesPlot = IoC.Get<TimeSeriesViewModel>();
             TimeSeriesPlot.IsShowMenu = false;
             TimeSeriesPlot.IsShowStatusbar = false;
+            TimeSeriesPlotExpanded = null;
 
-            CompassPlot = IoC.Get<CompassRoseViewModel>();
+            TabularData = IoC.Get<TabularViewModel>();
+            TabularDataExpanded = null;
 
             Application.Current.Dispatcher.Invoke((System.Action)delegate
             {
@@ -858,9 +462,17 @@ namespace RTI
             Correlation = new ObservableCollection<DataGridData>();
         }
 
+        /// <summary>
+        /// Shutdown the view model.
+        /// </summary>
         public void Dispose()
         {
-            CompassPlot.Dispose();
+            TabularData.Dispose();
+
+            if(TabularDataExpanded != null)
+            {
+                TabularDataExpanded.Dispose();
+            }
         }
 
         #region Process Data
@@ -876,8 +488,12 @@ namespace RTI
             // Get the boat speed
             AverageBoatSpeed();
 
-            // Add Comapss data to compass rose
-            AddCompassData();
+            // Pass the data to tabular
+            TabularData.ProcessData(_ensemble);
+            if(TabularDataExpanded != null)
+            {
+                TabularDataExpanded.ProcessData(_ensemble);
+            }
 
             // Plot 3D Velocity Plot
             Plot3dVelocityPlot();
@@ -1072,28 +688,6 @@ namespace RTI
 
         #endregion
 
-        #region Compass Data
-
-        /// <summary>
-        /// Add compass data to the compass rose.
-        /// </summary>
-        private void AddCompassData()
-        {
-            if(_ensemble != null)
-            {
-                if(_ensemble.IsAncillaryAvail)
-                {
-                    CompassPlot.AddIncomingData(_ensemble.AncillaryData.Heading, _ensemble.AncillaryData.Pitch, _ensemble.AncillaryData.Roll);
-                }
-                else if(_ensemble.IsBottomTrackAvail)
-                {
-                    CompassPlot.AddIncomingData(_ensemble.BottomTrackData.Heading, _ensemble.BottomTrackData.Pitch, _ensemble.AncillaryData.Roll);
-                }
-            }
-        }
-
-        #endregion
-
         #region 3D Velocity Plot
 
         /// <summary>
@@ -1119,6 +713,11 @@ namespace RTI
 
         #region Expand Plot
 
+        #region Heatmap
+
+        /// <summary>
+        /// Flag if the Expanded Heatmap is already displayed.
+        /// </summary>
         public bool CanExpandHeatmapPlot
         {
             get
@@ -1132,6 +731,10 @@ namespace RTI
             }
         }
 
+        /// <summary>
+        /// Expand the Heatmap plot to a new window.
+        /// Pass all the data from the old plot to the new plot.
+        /// </summary>
         public void ExpandHeatmapPlot()
         {
             // Create the Heatmap plot and attach to deactivate
@@ -1139,63 +742,15 @@ namespace RTI
             HeatmapPlotExapnded.Deactivated += HeatmapPlotExapnded_Deactivated;
 
             // Show the window and update the button
-            _windowMgr.ShowWindow(HeatmapPlotExapnded);
+            dynamic settings = new ExpandoObject();
+            settings.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            settings.MinWidth = 600;
+            settings.MinHeight = 300;
+            _windowMgr.ShowWindow(HeatmapPlotExapnded, null, settings);
             NotifyOfPropertyChange(() => this.CanExpandHeatmapPlot);
 
-            Application.Current.Dispatcher.Invoke((System.Action)delegate
-            {
-
-                // Lock the plot
-                lock (HeatmapPlotExapnded.Plot.SyncRoot)
-                {
-                    // Move all the data over
-                    HeatmapPlotExapnded.Plot.Series.Clear();
-
-                    // All all the data from the original Plot
-                    foreach (var series in HeatmapPlot.Plot.Series)
-                    {
-                        // Profile series
-                        if (series.GetType() == typeof(HeatMapSeries))
-                        {
-                            HeatMapSeries hmSeries = new HeatMapSeries();
-                            hmSeries.X0 = 0;                                                  // Left starts 0
-                            hmSeries.X1 = ((HeatMapSeries)series).Data.GetLength(0);          // Right (num ensembles)
-                            hmSeries.Y0 = 0;                                                  // Top starts 0
-                            hmSeries.Y1 = ((HeatMapSeries)series).Data.GetLength(1);          // Bottom end (num bins)
-                            hmSeries.Data = ((HeatMapSeries)series).Data;
-                            hmSeries.Interpolate = false;
-
-                            // Add series
-                            HeatmapPlotExapnded.Plot.Series.Add(hmSeries);
-                        }
-
-                        // Bottom Track series
-                        if (series.GetType() == typeof(AreaSeries))
-                        {
-                            AreaSeries btSeries = new AreaSeries();
-                            btSeries.Color = ((AreaSeries)series).Color;
-                            btSeries.Color2 = ((AreaSeries)series).Color2;
-                            btSeries.Fill = ((AreaSeries)series).Fill;
-                            btSeries.Tag = ((AreaSeries)series).Tag;
-
-                            foreach (var pt in ((AreaSeries)series).Points)
-                            {
-                                btSeries.Points.Add(pt);
-                            }
-                            foreach (var pt in ((AreaSeries)series).Points2)
-                            {
-                                btSeries.Points2.Add(pt);
-                            }
-
-                            // Add series
-                            HeatmapPlotExapnded.Plot.Series.Add(btSeries);
-                        }
-                    }
-                }
-
-                // Then refresh the plot
-                HeatmapPlotExapnded.Plot.InvalidatePlot(true);
-            });
+            // Duplicate the plot
+            HeatmapPlotExapnded.DuplicatePlot(HeatmapPlot);
         }
 
         /// <summary>
@@ -1208,6 +763,117 @@ namespace RTI
             HeatmapPlotExapnded = null;
             NotifyOfPropertyChange(() => this.CanExpandHeatmapPlot);
         }
+
+        #endregion
+
+        #region Ship Track
+
+        /// <summary>
+        /// Flag if the Expanded Heatmap is already displayed.
+        /// </summary>
+        public bool CanExpandShipTrackPlot
+        {
+            get
+            {
+                if (ShipTrackPlotExpanded == null)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Expand the Heatmap plot to a new window.
+        /// Pass all the data from the old plot to the new plot.
+        /// </summary>
+        public void ExpandShipTrackPlot()
+        {
+            // Create the Heatmap plot and attach to deactivate
+            ShipTrackPlotExpanded = IoC.Get<ShipTrackPlotViewModel>();
+            ShipTrackPlot.IsShowMenu = false;
+            ShipTrackPlot.IsShowStatusbar = false;
+            ShipTrackPlotExpanded.Deactivated += ExpandShipTrackPlot_Deactivated;
+
+            // Show the window and update the button
+            dynamic settings = new ExpandoObject();
+            settings.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            settings.MinWidth = 600;
+            settings.MinHeight = 300;
+            _windowMgr.ShowWindow(ShipTrackPlotExpanded, null, settings);
+            //_windowMgr.ShowWindow(ShipTrackPlotExpanded);
+            NotifyOfPropertyChange(() => this.CanExpandShipTrackPlot);
+
+            // Duplicate the plot
+            ShipTrackPlotExpanded.DuplicatePlot(ShipTrackPlot);
+        }
+
+        /// <summary>
+        /// The Heatmap Plot Expanded is closed.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ExpandShipTrackPlot_Deactivated(object sender, DeactivationEventArgs e)
+        {
+            ShipTrackPlotExpanded = null;
+            NotifyOfPropertyChange(() => this.CanExpandShipTrackPlot);
+        }
+
+        #endregion
+
+        #region Time Series
+
+        /// <summary>
+        /// Flag if the Expanded Time Series is already displayed.
+        /// </summary>
+        public bool CanExpandTimeSeriesPlot
+        {
+            get
+            {
+                if (TimeSeriesPlotExpanded == null)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Expand the Time Series plot to a new window.
+        /// Pass all the data from the old plot to the new plot.
+        /// </summary>
+        public void ExpandTimeSeriesPlot()
+        {
+            // Create the Heatmap plot and attach to deactivate
+            TimeSeriesPlotExpanded = IoC.Get<TimeSeriesViewModel>();
+            TimeSeriesPlotExpanded.Deactivated += TimeSeriesPlotExpanded_Deactivated;
+
+            // Show the window and update the button
+            dynamic settings = new ExpandoObject();
+            settings.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            settings.MinWidth = 600;
+            settings.MinHeight = 300;
+            _windowMgr.ShowWindow(TimeSeriesPlotExpanded, null, settings);
+            NotifyOfPropertyChange(() => this.CanExpandTimeSeriesPlot);
+
+            // Duplicate the plot
+            TimeSeriesPlotExpanded.DuplicatePlot(TimeSeriesPlot);
+        }
+
+        /// <summary>
+        /// The Time Series Plot Expanded is closed.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void TimeSeriesPlotExpanded_Deactivated(object sender, DeactivationEventArgs e)
+        {
+            TimeSeriesPlotExpanded = null;
+            NotifyOfPropertyChange(() => this.CanExpandTimeSeriesPlot);
+        }
+
+        #endregion
 
         #endregion
 
