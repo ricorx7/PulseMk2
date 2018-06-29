@@ -58,6 +58,7 @@ namespace RTI {
             container.PerRequest<ProfilePlot3dViewModel, ProfilePlot3dViewModel>();
 
             container.PerRequest<TabularViewModel, TabularViewModel>();
+            container.PerRequest<ProfilePlotViewModel, ProfilePlotViewModel>();
         }
 
         protected override object GetInstance(Type service, string key) {

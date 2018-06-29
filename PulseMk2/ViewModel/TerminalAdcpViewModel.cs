@@ -685,6 +685,9 @@ namespace RTI
             if (_serialPort != null && _serialPort.IsAvailable())
             {
                 Task.Run(() => _serialPort.SendDataWaitReply(SelectedAdcpCommand));
+
+                // Clear the command
+                SelectedAdcpCommand = "";
             }
             else
             {

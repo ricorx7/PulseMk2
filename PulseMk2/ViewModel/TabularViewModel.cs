@@ -1,6 +1,7 @@
 ﻿using Caliburn.Micro;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,100 @@ namespace RTI
         /// Store the latest ensemble.
         /// </summary>
         private DataSet.Ensemble _ensemble;
+
+        #endregion
+
+        #region Class
+
+        #region Data Grid Data
+
+        /// <summary>
+        /// Object to stor the data for the data grid.
+        /// </summary>
+        public class DataGridData
+        {
+            /// <summary>
+            /// Bin number.
+            /// </summary>
+            public int Bin { get; set; }
+
+            /// <summary>
+            /// Beam 0 Data
+            /// </summary>
+            public double Beam0 { get; set; }
+
+            /// <summary>
+            /// Beam 0 Data
+            /// </summary>
+            public double Beam1 { get; set; }
+
+            /// <summary>
+            /// Beam 0 Data
+            /// </summary>
+            public double Beam2 { get; set; }
+
+            /// <summary>
+            /// Beam 0 Data
+            /// </summary>
+            public double Beam3 { get; set; }
+
+            /// <summary>
+            /// Set the data.
+            /// </summary>
+            /// <param name="bin">Bin number.</param>
+            /// <param name="beam0">Beam 0 data.</param>
+            /// <param name="beam1">Beam 1 data.</param>
+            /// <param name="beam2">Beam 2 data.</param>
+            /// <param name="beam3">Beam 3 data.</param>
+            public DataGridData(int bin, double beam0, double beam1, double beam2, double beam3)
+            {
+                Bin = bin;
+                Beam0 = beam0;
+                Beam1 = beam1;
+                Beam2 = beam2;
+                Beam3 = beam3;
+            }
+        }
+
+        #endregion
+
+        #region VelocityVector Data Grid Data
+
+        /// <summary>
+        /// Object to stor the data for the data grid.
+        /// </summary>
+        public class VvDataGridData
+        {
+            /// <summary>
+            /// Bin number.
+            /// </summary>
+            public int Bin { get; set; }
+
+            /// <summary>
+            /// Beam 0 Data
+            /// </summary>
+            public double Magnitude { get; set; }
+
+            /// <summary>
+            /// Beam 0 Data
+            /// </summary>
+            public double Direction { get; set; }
+
+            /// <summary>
+            /// Set the data.
+            /// </summary>
+            /// <param name="bin">Bin number.</param>
+            /// <param name="mag">Magnitude data.</param>
+            /// <param name="dir">Direction data.</param>
+            public VvDataGridData(int bin, double mag, double dir)
+            {
+                Bin = bin;
+                Magnitude = mag;
+                Direction = dir;
+            }
+        }
+
+        #endregion
 
         #endregion
 
@@ -432,6 +527,41 @@ namespace RTI
 
         #endregion
 
+        #region Velocity Data
+
+        /// <summary>
+        /// Earth velocity data.
+        /// </summary>
+        public ObservableCollection<DataGridData> EarthVelocity { get; set; }
+
+        /// <summary>
+        /// Instrument velocity data.
+        /// </summary>
+        public ObservableCollection<DataGridData> InstrumentVelocity { get; set; }
+
+        /// <summary>
+        /// Beam velocity data.
+        /// </summary>
+        public ObservableCollection<DataGridData> BeamVelocity { get; set; }
+
+        /// <summary>
+        /// Velocity vector data.
+        /// </summary>
+        public ObservableCollection<VvDataGridData> VelocityVector { get; set; }
+
+        /// <summary>
+        /// Amplitude data.
+        /// </summary>
+        public ObservableCollection<DataGridData> Amplitude { get; set; }
+
+        /// <summary>
+        /// Correlation data.
+        /// </summary>
+        public ObservableCollection<DataGridData> Correlation { get; set; }
+
+
+        #endregion
+
         #endregion
 
         #region Plots
@@ -457,6 +587,13 @@ namespace RTI
             : base("Tabular")
         {
             CompassPlot = IoC.Get<CompassRoseViewModel>();
+
+            EarthVelocity = new ObservableCollection<DataGridData>();
+            InstrumentVelocity = new ObservableCollection<DataGridData>();
+            BeamVelocity = new ObservableCollection<DataGridData>();
+            VelocityVector = new ObservableCollection<VvDataGridData>();
+            Amplitude = new ObservableCollection<DataGridData>();
+            Correlation = new ObservableCollection<DataGridData>();
         }
 
         /// <summary>
@@ -470,7 +607,7 @@ namespace RTI
         /// <summary>
         /// Process the latest data.
         /// </summary>
-        /// <param name="ens"></param>
+        /// <param name="ens">Ensemble data</param>
         public void ProcessData(DataSet.Ensemble ens)
         {
             // Set the latest ensemble
@@ -478,6 +615,42 @@ namespace RTI
 
             // Update the compass rose
             AddCompassData();
+
+            // Process the Earth velocity data
+            if (ens.IsEarthVelocityAvail)
+            {
+                EarthVelocity = ProcessVelocityData(ens.EarthVelocityData.EarthVelocityData);
+            }
+
+            // Process the Instrument velocity data
+            if (ens.IsInstrumentVelocityAvail)
+            {
+                InstrumentVelocity = ProcessVelocityData(ens.InstrumentVelocityData.InstrumentVelocityData);
+            }
+
+            // Process the Beam velocity data
+            if (ens.IsBeamVelocityAvail)
+            {
+                BeamVelocity = ProcessVelocityData(ens.BeamVelocityData.BeamVelocityData);
+            }
+
+            // Process the Amplitude data
+            if (ens.IsAmplitudeAvail)
+            {
+                Amplitude = ProcessVelocityData(ens.AmplitudeData.AmplitudeData);
+            }
+
+            // Process the Correlation data
+            if (ens.IsCorrelationAvail)
+            {
+                Correlation = ProcessVelocityData(ens.CorrelationData.CorrelationData);
+            }
+
+            // Process the Velocity Vectors data
+            if (ens.IsEarthVelocityAvail && ens.EarthVelocityData.IsVelocityVectorAvail)
+            {
+                VelocityVector = ProcessVelocityVectorData(ens.EarthVelocityData.VelocityVectors);
+            }
 
             // Update the display
             NotifyOfPropertyChange(null);
@@ -502,6 +675,86 @@ namespace RTI
                     CompassPlot.AddIncomingData(_ensemble.BottomTrackData.Heading, _ensemble.BottomTrackData.Pitch, _ensemble.AncillaryData.Roll);
                 }
             }
+        }
+
+        #endregion
+
+        #region Process Velocity data
+
+        /// <summary>
+        /// Process the velocity vector data.
+        /// </summary>
+        /// <param name="data">Datat to process.</param>
+        /// <returns>List of velocity vectors.</returns>
+        private ObservableCollection<DataGridData> ProcessVelocityData(float[,] data)
+        {
+            int beams = data.GetLength(1);
+            int bins = data.GetLength(0);
+
+            ObservableCollection<DataGridData> list = new ObservableCollection<DataGridData>();
+
+            for (int bin = 0; bin < bins; bin++)
+            {
+                double beam0 = 0.0f;
+                double beam1 = 0.0f;
+                double beam2 = 0.0f;
+                double beam3 = 0.0f;
+
+                for (int beam = 0; beam < beams; beam++)
+                {
+                    // Beam 0 Data
+                    if (beam == 0)
+                    {
+                        beam0 = Math.Round(data[bin, beam], 3);
+                    }
+
+                    // Beam 1 Data
+                    if (beam == 1)
+                    {
+                        beam1 = Math.Round(data[bin, beam], 3);
+                    }
+
+                    // Beam 2 Data
+                    if (beam == 2)
+                    {
+                        beam2 = Math.Round(data[bin, beam], 3);
+                    }
+
+                    // Beam 3 Data
+                    if (beam == 3)
+                    {
+                        beam3 = Math.Round(data[bin, beam], 3);
+                    }
+                }
+
+                // Create the data
+                DataGridData binData = new DataGridData(bin, beam0, beam1, beam2, beam3);
+
+                // Add the data to the list
+                list.Add(binData);
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// Process the velocity vector data.
+        /// </summary>
+        /// <param name="data">Datat to process.</param>
+        /// <returns>List of velocity vectors.</returns>
+        private ObservableCollection<VvDataGridData> ProcessVelocityVectorData(DataSet.VelocityVector[] data)
+        {
+            ObservableCollection<VvDataGridData> list = new ObservableCollection<VvDataGridData>();
+
+            for (int bin = 0; bin < data.Length; bin++)
+            {
+                // Add the data to the list
+                list.Add(new VvDataGridData(bin,
+                                            Math.Round(data[bin].Magnitude, 3),
+                                            Math.Round(data[bin].DirectionYNorth, 3)));
+            }
+
+            return list;
         }
 
         #endregion

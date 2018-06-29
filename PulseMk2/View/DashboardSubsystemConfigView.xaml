@@ -129,7 +129,7 @@
                 </Grid.RowDefinitions>
 
                 <!--Ship Track-->
-                <Grid Grid.Row="0" Grid.Column="0" MaxHeight="190" Margin="5,0,0,5">
+                <Grid Grid.Row="0" Grid.Column="0" Margin="5,0,0,5">
                     <ContentControl cal:View.Model="{Binding ShipTrackPlot}" />
                     <Button Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" x:Name="ExpandShipTrackPlot">
                         <iconPacks:Material Kind="ArrowExpand"  />
@@ -152,7 +152,7 @@
                     </Grid.ColumnDefinitions>
 
                     <Grid Grid.Column="0" Background="{StaticResource PulseBlock}" Margin="5,0,5,5">
-                        <Viewbox Stretch="Fill" MaxHeight="250" VerticalAlignment="Center">
+                        <Viewbox Stretch="Fill" MaxHeight="500" VerticalAlignment="Center">
                             <ContentControl cal:View.Model="{Binding Profile3dPlot}" />
                         </Viewbox>
                         <Button Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" x:Name="ExpandProfile3dPlot">
@@ -161,11 +161,11 @@
                     </Grid>
 
                     <Border Grid.Column="1" Background="{StaticResource PulseBlock}" Margin="0,0,5,5">
-
+                        <ContentControl cal:View.Model="{Binding AmplitudePlot}"/>
                     </Border>
 
                     <Border Grid.Column="2" Background="{StaticResource PulseBlock}" Margin="0,0,0,5">
-
+                        <ContentControl cal:View.Model="{Binding CorrelationPlot}"/>
                     </Border>
 
                 </Grid>

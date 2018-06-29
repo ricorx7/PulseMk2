@@ -27,100 +27,6 @@ namespace RTI
 
         #endregion
 
-        #region Class
-
-        #region Data Grid Data
-
-        /// <summary>
-        /// Object to stor the data for the data grid.
-        /// </summary>
-        public class DataGridData
-        {
-            /// <summary>
-            /// Bin number.
-            /// </summary>
-            public int Bin { get; set; }
-
-            /// <summary>
-            /// Beam 0 Data
-            /// </summary>
-            public double Beam0 { get; set; }
-
-            /// <summary>
-            /// Beam 0 Data
-            /// </summary>
-            public double Beam1 { get; set; }
-
-            /// <summary>
-            /// Beam 0 Data
-            /// </summary>
-            public double Beam2 { get; set; }
-
-            /// <summary>
-            /// Beam 0 Data
-            /// </summary>
-            public double Beam3 { get; set; }
-
-            /// <summary>
-            /// Set the data.
-            /// </summary>
-            /// <param name="bin">Bin number.</param>
-            /// <param name="beam0">Beam 0 data.</param>
-            /// <param name="beam1">Beam 1 data.</param>
-            /// <param name="beam2">Beam 2 data.</param>
-            /// <param name="beam3">Beam 3 data.</param>
-            public DataGridData(int bin, double beam0, double beam1, double beam2, double beam3)
-            {
-                Bin = bin;
-                Beam0 = beam0;
-                Beam1 = beam1;
-                Beam2 = beam2;
-                Beam3 = beam3;
-            }
-        }
-
-        #endregion
-
-        #region VelocityVector Data Grid Data
-
-        /// <summary>
-        /// Object to stor the data for the data grid.
-        /// </summary>
-        public class VvDataGridData
-        {
-            /// <summary>
-            /// Bin number.
-            /// </summary>
-            public int Bin { get; set; }
-
-            /// <summary>
-            /// Beam 0 Data
-            /// </summary>
-            public double Magnitude { get; set; }
-
-            /// <summary>
-            /// Beam 0 Data
-            /// </summary>
-            public double Direction { get; set; }
-
-            /// <summary>
-            /// Set the data.
-            /// </summary>
-            /// <param name="bin">Bin number.</param>
-            /// <param name="mag">Magnitude data.</param>
-            /// <param name="dir">Direction data.</param>
-            public VvDataGridData(int bin, double mag, double dir)
-            {
-                Bin = bin;
-                Magnitude = mag;
-                Direction = dir;
-            }
-        }
-
-        #endregion
-
-        #endregion
-
         #region Properties
 
         /// <summary>
@@ -335,41 +241,6 @@ namespace RTI
 
         #endregion
 
-        #region Velocity Data
-
-        /// <summary>
-        /// Earth velocity data.
-        /// </summary>
-        public ObservableCollection<DataGridData> EarthVelocity { get; set; }
-
-        /// <summary>
-        /// Instrument velocity data.
-        /// </summary>
-        public ObservableCollection<DataGridData> InstrumentVelocity { get; set; }
-
-        /// <summary>
-        /// Beam velocity data.
-        /// </summary>
-        public ObservableCollection<DataGridData> BeamVelocity { get; set; }
-
-        /// <summary>
-        /// Velocity vector data.
-        /// </summary>
-        public ObservableCollection<VvDataGridData> VelocityVector { get; set; }
-
-        /// <summary>
-        /// Amplitude data.
-        /// </summary>
-        public ObservableCollection<DataGridData> Amplitude { get; set; }
-
-        /// <summary>
-        /// Correlation data.
-        /// </summary>
-        public ObservableCollection<DataGridData> Correlation { get; set; }
-
-
-        #endregion
-
         #region Plots
 
         /// <summary>
@@ -417,6 +288,16 @@ namespace RTI
         /// </summary>
         public TabularViewModel TabularDataExpanded { get; set; }
 
+        /// <summary>
+        /// Correlation plot.
+        /// </summary>
+        public ProfilePlotViewModel CorrelationPlot { get; set; }
+
+        /// <summary>
+        /// Amplitude plot.
+        /// </summary>
+        public ProfilePlotViewModel AmplitudePlot { get; set; }
+
         #endregion
 
         #endregion
@@ -454,12 +335,11 @@ namespace RTI
                 Profile3dPlot = IoC.Get<ProfilePlot3dViewModel>();
             });
 
-            EarthVelocity = new ObservableCollection<DataGridData>();
-            InstrumentVelocity = new ObservableCollection<DataGridData>();
-            BeamVelocity = new ObservableCollection<DataGridData>();
-            VelocityVector = new ObservableCollection<VvDataGridData>();
-            Amplitude = new ObservableCollection<DataGridData>();
-            Correlation = new ObservableCollection<DataGridData>();
+            CorrelationPlot = IoC.Get<ProfilePlotViewModel>();
+            CorrelationPlot.SetAxis(ProfilePlotViewModel.PlotType.PLOT_CORRELATION, false);
+
+            AmplitudePlot = IoC.Get<ProfilePlotViewModel>();
+            AmplitudePlot.SetAxis(ProfilePlotViewModel.PlotType.PLOT_AMPLITUDE, true);
         }
 
         /// <summary>
@@ -495,6 +375,8 @@ namespace RTI
                 TabularDataExpanded.ProcessData(_ensemble);
             }
 
+            TimeSeriesPlot.AddEnsemble(_ensemble);
+
             // Plot 3D Velocity Plot
             Plot3dVelocityPlot();
 
@@ -505,47 +387,11 @@ namespace RTI
                 HeatmapPlotExapnded.AddEnsemble(_ensemble);
             }
 
-            // Process the Earth velocity data
-            EarthVelocity.Clear();
-            if (_ensemble.IsEarthVelocityAvail)
-            {
-                ProcessVelocityData(EarthVelocity, _ensemble.EarthVelocityData.EarthVelocityData);
-            }
+            // Plot the amplitude data
+            AmplitudePlot.AddEnsemble(_ensemble);
 
-            // Process the Instrument velocity data
-            InstrumentVelocity.Clear();
-            if (_ensemble.IsInstrumentVelocityAvail)
-            {
-                ProcessVelocityData(InstrumentVelocity, _ensemble.InstrumentVelocityData.InstrumentVelocityData);
-            }
-
-            // Process the Beam velocity data
-            BeamVelocity.Clear();
-            if (_ensemble.IsBeamVelocityAvail)
-            {
-                ProcessVelocityData(BeamVelocity, _ensemble.BeamVelocityData.BeamVelocityData);
-            }
-
-            // Process the Amplitude data
-            Amplitude.Clear();
-            if (_ensemble.IsAmplitudeAvail)
-            {
-                ProcessVelocityData(Amplitude, _ensemble.AmplitudeData.AmplitudeData);
-            }
-
-            // Process the Correlation data
-            Correlation.Clear();
-            if (_ensemble.IsCorrelationAvail)
-            {
-                ProcessVelocityData(Correlation, _ensemble.CorrelationData.CorrelationData);
-            }
-
-            // Process the Velocity Vectors data
-            VelocityVector.Clear();
-            if (_ensemble.IsEarthVelocityAvail && _ensemble.EarthVelocityData.IsVelocityVectorAvail)
-            {
-                ProcessVelocityVectorData(VelocityVector, _ensemble.EarthVelocityData.VelocityVectors);
-            }
+            // Plot the correlation data
+            CorrelationPlot.AddEnsemble(_ensemble);
         }
 
         #region Calculate Average 
@@ -612,78 +458,6 @@ namespace RTI
             }
 
 
-        }
-
-        #endregion
-
-        #region Process Velocity data
-
-        /// <summary>
-        /// Process the velocity data.
-        /// </summary>
-        private void ProcessVelocityData(ObservableCollection<DataGridData> list, float[,] data)
-        {
-            int beams = data.GetLength(1);
-            int bins = data.GetLength(0);
-
-            //List<DataGridData> list = new List<DataGridData>();
-
-            for (int bin = 0; bin < bins; bin++)
-            {
-                double beam0 = 0.0f;
-                double beam1 = 0.0f;
-                double beam2 = 0.0f;
-                double beam3 = 0.0f;
-
-                for (int beam = 0; beam < beams; beam++)
-                {
-                    // Beam 0 Data
-                    if (beam == 0)
-                    {
-                        beam0 = Math.Round(data[bin, beam], 3);
-                    }
-
-                    // Beam 1 Data
-                    if (beam == 1)
-                    {
-                        beam1 = Math.Round(data[bin, beam], 3);
-                    }
-
-                    // Beam 2 Data
-                    if (beam == 2)
-                    {
-                        beam2 = Math.Round(data[bin, beam], 3);
-                    }
-
-                    // Beam 3 Data
-                    if (beam == 3)
-                    {
-                        beam3 = Math.Round(data[bin, beam], 3);
-                    }
-                }
-
-                // Create the data
-                DataGridData binData = new DataGridData(bin, beam0, beam1, beam2, beam3);
-
-                // Add the data to the list
-                list.Add(binData);
-            }
-
-            //return list;
-        }
-
-        /// <summary>
-        /// Process the velocity vector data.
-        /// </summary>
-        private void ProcessVelocityVectorData(ObservableCollection<VvDataGridData> list, DataSet.VelocityVector[] data)
-        {
-            for(int bin = 0; bin < data.Length; bin++)
-            {
-                // Add the data to the list
-                list.Add(new VvDataGridData(bin, 
-                                            Math.Round(data[bin].Magnitude, 3), 
-                                            Math.Round(data[bin].DirectionYNorth, 3)));
-            }
         }
 
         #endregion
@@ -889,14 +663,14 @@ namespace RTI
             // Set the latest ensemble
             _ensemble = ensemble;
 
-            Application.Current.Dispatcher.Invoke((System.Action)delegate
-            {
+            //Application.Current.Dispatcher.Invoke((System.Action)delegate
+            //{
                 // Process the information
                 ProcessData();
 
                 // Update the display
                 NotifyOfPropertyChange(null);
-            });
+            //});
         }
 
         /// <summary>

@@ -5,6 +5,7 @@ using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
 using ReactiveUI;
+using RTI.DataSet;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,6 +18,7 @@ using System.Linq;
 using System.Reactive;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace RTI
 {
@@ -118,6 +120,49 @@ namespace RTI
             public override string ToString()
             {
                 return String.Format("{0} Bin:{1} Beam:{2}", PlotType, Bin, Beam);
+            }
+
+            /// <summary>
+            /// Override equal.
+            /// </summary>
+            /// <param name="obj"></param>
+            /// <returns></returns>
+            public override bool Equals(object obj)
+            {
+                // Check for null values and compare run-time types.
+                if (obj == null || GetType() != obj.GetType())
+                    return false;
+
+                if (((SeriesInfo)obj).PlotType == PlotType &&
+                   ((SeriesInfo)obj).Color == Color &&
+                   ((SeriesInfo)obj).Beam == Beam &&
+                   ((SeriesInfo)obj).Bin == Bin &&
+                   ((SeriesInfo)obj).NumEnsembles == NumEnsembles)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            /// <summary>
+            /// ==
+            /// </summary>
+            /// <param name="x"></param>
+            /// <param name="y"></param>
+            /// <returns></returns>
+            public static bool operator ==(SeriesInfo x, SeriesInfo y)
+            {
+                return x.PlotType == y.PlotType && 
+                        x.Color == y.Color &&
+                        x.Beam == y.Beam &&
+                        x.Bin == y.Bin &&
+                        x.NumEnsembles == y.NumEnsembles;
+            }
+
+            public static bool operator !=(SeriesInfo x, SeriesInfo y)
+            {
+                return !(x == y);
             }
         }
 
@@ -336,10 +381,24 @@ namespace RTI
             // Add a base set of data to the time series
             SetupLists();
 
-            SeriesList.Add(new SeriesInfo() { PlotType = PlotDataType.BottomTrackRange, Beam = 0, Bin = 0, Color = OxyColors.Red });
-            SeriesList.Add(new SeriesInfo() { PlotType = PlotDataType.BottomTrackRange, Beam = 1, Bin = 0, Color = OxyColors.Green });
-            SeriesList.Add(new SeriesInfo() { PlotType = PlotDataType.BottomTrackRange, Beam = 2, Bin = 0, Color = OxyColors.Blue });
-            SeriesList.Add(new SeriesInfo() { PlotType = PlotDataType.BottomTrackRange, Beam = 3, Bin = 0, Color = OxyColors.Orange });
+            //SeriesList.Add(new SeriesInfo() { PlotType = PlotDataType.BottomTrackRange, Beam = 0, Bin = 0, Color = OxyColors.Red });
+            //SeriesList.Add(new SeriesInfo() { PlotType = PlotDataType.BottomTrackRange, Beam = 1, Bin = 0, Color = OxyColors.Green });
+            //SeriesList.Add(new SeriesInfo() { PlotType = PlotDataType.BottomTrackRange, Beam = 2, Bin = 0, Color = OxyColors.Blue });
+            //SeriesList.Add(new SeriesInfo() { PlotType = PlotDataType.BottomTrackRange, Beam = 3, Bin = 0, Color = OxyColors.Orange });
+
+            SeriesList.Add(new SeriesInfo() { PlotType = PlotDataType.Amplitude, Beam = 0, Bin = 0, Color = OxyColors.Red });
+            SeriesList.Add(new SeriesInfo() { PlotType = PlotDataType.Amplitude, Beam = 1, Bin = 0, Color = OxyColors.Green });
+            SeriesList.Add(new SeriesInfo() { PlotType = PlotDataType.Amplitude, Beam = 2, Bin = 0, Color = OxyColors.Blue });
+            SeriesList.Add(new SeriesInfo() { PlotType = PlotDataType.Amplitude, Beam = 3, Bin = 0, Color = OxyColors.Orange });
+
+            // Add the lines
+            foreach (var series in SeriesList)
+            {
+                SeriesData sd = new SeriesData();
+                sd.Info = series;
+
+                PlotSeriesData(sd);
+            }
 
             // Add Series Command commands
             this.AddSeriesCommand = ReactiveCommand.Create(() => AddSeries());
@@ -699,105 +758,119 @@ namespace RTI
         /// <param name="data"></param>
         private void PlotSeriesData(SeriesData data)
         {
-            Plot.Axes.Clear();
+            //Application.Current.Dispatcher.Invoke((System.Action)delegate
+            //{
+                // Clear all the axis
+                Plot.Axes.Clear();
 
-            // Add bottom ensemble axis
-            Plot.Axes.Add(new LinearAxis
-            {
-                Position = AxisPosition.Bottom,
-                TickStyle = OxyPlot.Axes.TickStyle.Inside,                               // Put tick lines inside the plot
-                MinimumPadding = 0,                                                 // Start at axis edge   
-                MaximumPadding = 0,                                                 // Start at axis edge
-                Unit = "ENS"
-            });
+                // Add bottom ensemble axis
+                Plot.Axes.Add(new LinearAxis
+                {
+                    Position = AxisPosition.Bottom,
+                    TickStyle = OxyPlot.Axes.TickStyle.Inside,                               // Put tick lines inside the plot
+                    MinimumPadding = 0,                                                 // Start at axis edge   
+                    MaximumPadding = 0,                                                 // Start at axis edge
+                    Unit = "ENS"
+                });
 
-            // Create the line title
-            string title = "";
-            switch (data.Info.PlotType)
-            {
-                case PlotDataType.Magnitude:
-                    title = string.Format("{0} Bin[{1}]", data.Info.PlotType, data.Info.Bin);
-                    Plot.Title = "Water Magnitude";
-                    Plot.Axes.Add(new LinearAxis
-                    {
-                        StartPosition = 0,
-                        EndPosition = 1,
-                        Position = AxisPosition.Left,
-                        Unit = "m/s"
-                    });
-                    break;
-                case PlotDataType.Direction:
-                    title = string.Format("{0} Bin[{1}]", data.Info.PlotType, data.Info.Bin);
-                    Plot.Title = "Water Direction";
-                    Plot.Axes.Add(new LinearAxis
-                    {
-                        StartPosition = 0,
-                        EndPosition = 1,
-                        Position = AxisPosition.Left,
-                        Unit = "degrees"
-                    });
-                    break;
-                case PlotDataType.BottomTrackRange:
-                    title = string.Format("{0} Beam[{1}]", data.Info.PlotType, data.Info.Beam);
-                    Plot.Title = "Bottom Track Range";
-                    Plot.Axes.Add(new LinearAxis
-                    {
-                        StartPosition = 1,
-                        EndPosition = 0,
-                        Position = AxisPosition.Left,
-                        Unit = "m"
-                    });
-                    break;
-                case PlotDataType.BottomTrackEarthVelocity:
-                    title = string.Format("{0} Beam[{1}]", data.Info.PlotType, data.Info.Beam);
-                    Plot.Title = "Bottom Track Earth Velocity";
-                    Plot.Axes.Add(new LinearAxis
-                    {
-                        StartPosition = 0,
-                        EndPosition = 1,
-                        Position = AxisPosition.Left,
-                        Unit = "m/s"
-                    });
-                    break;
-                case PlotDataType.Voltage:
-                    title = string.Format("{0}", data.Info.PlotType);
-                    Plot.Title = "Voltage";
-                    Plot.Axes.Add(new LinearAxis
-                    {
-                        StartPosition = 0,
-                        EndPosition = 1,
-                        Position = AxisPosition.Left,
-                        Unit = "volts"
-                    });
-                    break;
-                case PlotDataType.Amplitude:
-                default:
-                    title = string.Format("{0} Bin[{1}] Beam[{2}]", data.Info.PlotType, data.Info.Bin, data.Info.Beam);
-                    Plot.Title = "Amplitude";
-                    Plot.Axes.Add(new LinearAxis
-                    {
-                        StartPosition = 0,
-                        EndPosition = 1,
-                        Position = AxisPosition.Left,
-                        Unit = "dB"
-                    });
-                    break;
-            }
+                // Create the line title
+                string title = "";
+                switch (data.Info.PlotType)
+                {
+                    case PlotDataType.Magnitude:
+                        title = string.Format("{0} Bin[{1}]", data.Info.PlotType, data.Info.Bin);
+                        Plot.Title = "Water Magnitude";
+                        Plot.Axes.Add(new LinearAxis
+                        {
+                            StartPosition = 0,
+                            EndPosition = 1,
+                            Position = AxisPosition.Left,
+                            Unit = "m/s"
+                        });
+                        break;
+                    case PlotDataType.Direction:
+                        title = string.Format("{0} Bin[{1}]", data.Info.PlotType, data.Info.Bin);
+                        Plot.Title = "Water Direction";
+                        Plot.Axes.Add(new LinearAxis
+                        {
+                            StartPosition = 0,
+                            EndPosition = 1,
+                            Position = AxisPosition.Left,
+                            Unit = "degrees"
+                        });
+                        break;
+                    case PlotDataType.BottomTrackRange:
+                        title = string.Format("{0} Beam[{1}]", data.Info.PlotType, data.Info.Beam);
+                        Plot.Title = "Bottom Track Range";
+                        Plot.Axes.Add(new LinearAxis
+                        {
+                            StartPosition = 1,
+                            EndPosition = 0,
+                            Position = AxisPosition.Left,
+                            Unit = "m"
+                        });
+                        break;
+                    case PlotDataType.BottomTrackEarthVelocity:
+                        title = string.Format("{0} Beam[{1}]", data.Info.PlotType, data.Info.Beam);
+                        Plot.Title = "Bottom Track Earth Velocity";
+                        Plot.Axes.Add(new LinearAxis
+                        {
+                            StartPosition = 0,
+                            EndPosition = 1,
+                            Position = AxisPosition.Left,
+                            Unit = "m/s"
+                        });
+                        break;
+                    case PlotDataType.Voltage:
+                        title = string.Format("{0}", data.Info.PlotType);
+                        Plot.Title = "Voltage";
+                        Plot.Axes.Add(new LinearAxis
+                        {
+                            StartPosition = 0,
+                            EndPosition = 1,
+                            Position = AxisPosition.Left,
+                            Unit = "volts"
+                        });
+                        break;
+                    case PlotDataType.Amplitude:
+                    default:
+                        title = string.Format("{0} Bin[{1}] Beam[{2}]", data.Info.PlotType, data.Info.Bin, data.Info.Beam);
+                        Plot.Title = "Amplitude";
+                        Plot.Axes.Add(new LinearAxis
+                        {
+                            StartPosition = 0,
+                            EndPosition = 1,
+                            Position = AxisPosition.Left,
+                            Unit = "dB"
+                        });
+                        break;
+                }
 
-            // Create a Line series
-            LineSeries series = new LineSeries();
-            series.Title = title;
-            series.Color = data.Info.Color;
+                // Create a Line series
+                LineSeries series = new LineSeries();
+                series.Title = title;
+                series.Color = data.Info.Color;
+                //series.Tag = GetSeriesTag(data.Info);
+                series.Tag = data.Info;
 
-            // Add data to the series
-            series.Points.AddRange(data.Data);
+                if (data.Data != null)
+                {
+                    // Add data to the series
+                    series.Points.AddRange(data.Data);
+                }
 
-            lock (Plot.SyncRoot)
-            {
-                // Add it to the plot
-                Plot.Series.Add(series);
-            }
-            Plot.InvalidatePlot(true);
+                lock (Plot.SyncRoot)
+                {
+                    // Add it to the plot
+                    Plot.Series.Add(series);
+                }
+                Plot.InvalidatePlot(true);
+            //});
+        }
+
+        private string GetSeriesTag(SeriesInfo series)
+        {
+            return string.Format("{0}_{1}_{2}", series.PlotType, series.Bin, series.Beam);
         }
 
         #endregion
@@ -811,13 +884,16 @@ namespace RTI
         /// <param name="maxIndex">Maximum Index.</param>
         public override void ReplotData(int minIndex, int maxIndex)
         {
-            // Clear the plot
-            lock (Plot.SyncRoot)
-            {
-                // Add it to the plot
-                Plot.Series.Clear();
-            }
-            Plot.InvalidatePlot(true);
+            //Application.Current.Dispatcher.Invoke((System.Action)delegate
+            //{
+                // Clear the plot
+                lock (Plot.SyncRoot)
+                {
+                    // Add it to the plot
+                    Plot.Series.Clear();
+                }
+                Plot.InvalidatePlot(true);
+            //});
 
             // Plot the data
             foreach (SeriesInfo seriesInfo in SeriesList)
@@ -1278,65 +1354,182 @@ namespace RTI
         /// <param name="vm">Original plot.</param>
         public void DuplicatePlot(TimeSeriesViewModel vm)
         {
-            lock (Plot.SyncRoot)
-            {
-                // Clear the current points
-                Plot.Series.Clear();
-                Plot.Axes.Clear();
-            }
+            // Set the file path
+            ProjectFilePath = vm.ProjectFilePath;
 
-
-            // Axis
-            foreach (var axis in vm.Plot.Axes)
-            {
-                if(axis.GetType() == typeof(LinearAxis))
+            //Application.Current.Dispatcher.Invoke((System.Action)delegate
+            //{
+                lock (Plot.SyncRoot)
                 {
-                    LinearAxis newAxis = new LinearAxis();
-                    newAxis.Position = ((LinearAxis)axis).Position;
-                    newAxis.TickStyle = ((LinearAxis)axis).TickStyle;                               // Put tick lines inside the plot
-                    newAxis.MinimumPadding = ((LinearAxis)axis).MinimumPadding;                                                 // Start at axis edge   
-                    newAxis.MaximumPadding = ((LinearAxis)axis).MaximumPadding;                                                 // Start at axis edge
-                    newAxis.Unit = ((LinearAxis)axis).Unit;
-                    newAxis.StartPosition = ((LinearAxis)axis).StartPosition;
-                    newAxis.EndPosition = ((LinearAxis)axis).EndPosition;
+                    // Clear the current points
+                    Plot.Series.Clear();
+                    Plot.Axes.Clear();
+                }
 
-                    lock (Plot.SyncRoot)
+
+                // Axis
+                foreach (var axis in vm.Plot.Axes)
+                {
+                    if (axis.GetType() == typeof(LinearAxis))
                     {
-                        // Add it to the plot
-                        Plot.Axes.Add(newAxis);
+                        LinearAxis newAxis = new LinearAxis();
+                        newAxis.Position = ((LinearAxis)axis).Position;
+                        newAxis.TickStyle = ((LinearAxis)axis).TickStyle;                               // Put tick lines inside the plot
+                        newAxis.MinimumPadding = ((LinearAxis)axis).MinimumPadding;                                                 // Start at axis edge   
+                        newAxis.MaximumPadding = ((LinearAxis)axis).MaximumPadding;                                                 // Start at axis edge
+                        newAxis.Unit = ((LinearAxis)axis).Unit;
+                        newAxis.StartPosition = ((LinearAxis)axis).StartPosition;
+                        newAxis.EndPosition = ((LinearAxis)axis).EndPosition;
+
+                        lock (Plot.SyncRoot)
+                        {
+                            // Add it to the plot
+                            Plot.Axes.Add(newAxis);
+                        }
                     }
                 }
-            }
 
                 // Line series
                 foreach (var vmSeries in vm.Plot.Series)
-            {
-                if (vmSeries.GetType() == typeof(LineSeries))
                 {
-                    // Create a Line series
-                    LineSeries series = new LineSeries();
-                    series.Title = vmSeries.Title;
-                    series.Color = ((LineSeries)vmSeries).Color;
-
-                    // Add data to the series
-                    foreach (var pt in ((LineSeries)vmSeries).Points)
+                    if (vmSeries.GetType() == typeof(LineSeries))
                     {
-                        series.Points.Add(new DataPoint(pt.X, pt.Y));
-                    }
+                        // Create a Line series
+                        LineSeries series = new LineSeries();
+                        series.Title = vmSeries.Title;
+                        series.Color = ((LineSeries)vmSeries).Color;
 
-                    lock (Plot.SyncRoot)
-                    {
-                        // Add it to the plot
-                        Plot.Series.Add(series);
+                        // Add data to the series
+                        foreach (var pt in ((LineSeries)vmSeries).Points)
+                        {
+                            series.Points.Add(new DataPoint(pt.X, pt.Y));
+                        }
+
+                        lock (Plot.SyncRoot)
+                        {
+                            // Add it to the plot
+                            Plot.Series.Add(series);
+                        }
                     }
                 }
-            }
 
-            // Update plot
-            Plot.InvalidatePlot(true);
+                // Update plot
+                Plot.InvalidatePlot(true);
+            //});
         }
 
         #endregion
 
+        #region Add Ensemble
+
+        /// <summary>
+        /// Add the ensemble data to the plot based off the series list.
+        /// </summary>
+        /// <param name="ens">Ensemble.</param>
+        public override void AddEnsemble(Ensemble ens)
+        {
+            // Go through each series and add the data
+            foreach(var series in SeriesList)
+            {
+                // Add the data point to the series
+                DataPoint dp = GetDataPoint(ens, series);
+
+                // Add the data point to the series
+                foreach(var plotSeries in Plot.Series)
+                {
+                    if(((SeriesInfo)(plotSeries.Tag)) == series)
+                    {
+                        lock (Plot.SyncRoot)
+                        {
+                            ((LineSeries)plotSeries).Points.Add(dp);
+                        }
+                        Plot.InvalidatePlot(true);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get the data point from the ensemble.
+        /// </summary>
+        /// <param name="ens">Ensemble.</param>
+        /// <param name="series">Series info.</param>
+        /// <returns>Data point based off the ensemble and series info.</returns>
+        private DataPoint GetDataPoint(DataSet.Ensemble ens, SeriesInfo series)
+        {
+            switch(series.PlotType)
+            {
+                case PlotDataType.Amplitude:
+                    return GetAmpDataPoint(ens, series);
+                case PlotDataType.BottomTrackRange:
+                    return GetBtRangeDataPoint(ens, series);
+            }
+
+            return new DataPoint();
+        }
+
+        /// <summary>
+        /// Get the Amplitude data point.
+        /// </summary>
+        /// <param name="ens">Ensemble.</param>
+        /// <param name="series">Series info.</param>
+        /// <returns>Amplitude data point.</returns>
+        private DataPoint GetAmpDataPoint(DataSet.Ensemble ens, SeriesInfo series)
+        {
+
+            if(ens != null && ens.IsAmplitudeAvail)
+            {
+                // Find and ensemble number
+                int ensNum = 0;
+                if(ens.IsEnsembleAvail)
+                {
+                    ensNum = ens.EnsembleData.EnsembleNumber;
+                }
+
+                // Verify the size
+                int numBins = ens.AmplitudeData.AmplitudeData.GetLength(0);
+                int numBeams = ens.AmplitudeData.AmplitudeData.GetLength(1);
+
+                // Get the value
+                if(series.Bin < numBins && series.Beam < numBeams )
+                {
+                    return new DataPoint(ensNum, ens.AmplitudeData.AmplitudeData[series.Bin, series.Beam]);
+                }
+            }
+
+            return new DataPoint();
+        }
+
+        /// <summary>
+        /// Get the Bottom Track Range data point.
+        /// </summary>
+        /// <param name="ens">Ensemble.</param>
+        /// <param name="series">Series info.</param>
+        /// <returns>Bottom Track Range data point.</returns>
+        private DataPoint GetBtRangeDataPoint(DataSet.Ensemble ens, SeriesInfo series)
+        {
+            if (ens != null && ens.IsBottomTrackAvail)
+            {
+                // Find and ensemble number
+                int ensNum = 0;
+                if (ens.IsEnsembleAvail)
+                {
+                    ensNum = ens.EnsembleData.EnsembleNumber;
+                }
+
+                // Verify the size
+                float numBeams = ens.BottomTrackData.NumBeams;
+
+                // Get the value
+                if (series.Beam < numBeams)
+                {
+                    return new DataPoint(ensNum, ens.BottomTrackData.Range[series.Beam]);
+                }
+            }
+
+            return new DataPoint();
+        }
+
+        #endregion
     }
 }

@@ -195,6 +195,7 @@
     <Compile Include="ViewModel\HomeViewModel.cs" />
     <Compile Include="ViewModel\PlotViewModel.cs" />
     <Compile Include="ViewModel\ProfilePlot3dViewModel.cs" />
+    <Compile Include="ViewModel\ProfilePlotViewModel.cs" />
     <Compile Include="ViewModel\ScreenEnsembleViewModel.cs" />
     <Compile Include="ViewModel\ShellViewModel.cs" />
     <Compile Include="App.xaml.cs">
@@ -224,6 +225,9 @@
     </Compile>
     <Compile Include="View\ProfilePlot3dView.xaml.cs">
       <DependentUpon>ProfilePlot3dView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\ProfilePlotView.xaml.cs">
+      <DependentUpon>ProfilePlotView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\ShipTrackPlotView.xaml.cs" />
     <Compile Include="View\TabularView.xaml.cs">
@@ -262,6 +266,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\ProfilePlot3dView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ProfilePlotView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
