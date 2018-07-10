@@ -195,6 +195,7 @@
     <Compile Include="ViewModel\HomeViewModel.cs" />
     <Compile Include="ViewModel\PlotViewModel.cs" />
     <Compile Include="ViewModel\ProfilePlot3dViewModel.cs" />
+    <Compile Include="ViewModel\ProfilePlotViewModel.cs" />
     <Compile Include="ViewModel\ScreenEnsembleViewModel.cs" />
     <Compile Include="ViewModel\ShellViewModel.cs" />
     <Compile Include="App.xaml.cs">
@@ -202,6 +203,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ViewModel\ShipTrackPlotViewModel.cs" />
+    <Compile Include="ViewModel\TabularViewModel.cs" />
     <Compile Include="ViewModel\TerminalAdcpViewModel.cs" />
     <Compile Include="ViewModel\TimeSeriesViewModel.cs" />
     <Compile Include="ViewModel\ViewResolvingPlotModel.cs" />
@@ -224,7 +226,13 @@
     <Compile Include="View\ProfilePlot3dView.xaml.cs">
       <DependentUpon>ProfilePlot3dView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\ProfilePlotView.xaml.cs">
+      <DependentUpon>ProfilePlotView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\ShipTrackPlotView.xaml.cs" />
+    <Compile Include="View\TabularView.xaml.cs">
+      <DependentUpon>TabularView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\TerminalAdcpView.xaml.cs">
       <DependentUpon>TerminalAdcpView.xaml</DependentUpon>
     </Compile>
@@ -261,6 +269,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\ProfilePlotView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\ShellView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -268,6 +280,10 @@
     <Page Include="View\ShipTrackPlotView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\TabularView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\TerminalAdcpView.xaml">
       <SubType>Designer</SubType>

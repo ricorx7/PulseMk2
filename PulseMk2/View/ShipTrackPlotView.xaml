@@ -194,10 +194,10 @@
                 </gmaps:GMapControl.ContextMenu>
             </gmaps:GMapControl>
 
-            <Viewbox Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top">
-            <Border Grid.Column="0" Background="#6661B3FF" Margin="5,5,20,5" CornerRadius="3" HorizontalAlignment="Right" VerticalAlignment="Top" Height="340">
-                <ContentPresenter Grid.Column="0" Content="{Binding ColorMapCanvas}" Width="40" Margin="5,5,20,5" HorizontalAlignment="Right"/>
-            </Border>
+            <Viewbox Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top" MaxHeight="200">
+                <Border Grid.Column="0" Background="#6661B3FF" Margin="5,5,20,5" CornerRadius="3" HorizontalAlignment="Right" VerticalAlignment="Top" Height="340">
+                    <ContentPresenter Grid.Column="0" Content="{Binding ColorMapCanvas}" Width="40" Margin="5,5,20,5" HorizontalAlignment="Right"/>
+                </Border>
             </Viewbox>
         </Grid>
     </DockPanel>

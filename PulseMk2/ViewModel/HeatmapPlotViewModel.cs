@@ -43,6 +43,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace RTI
 {
@@ -648,6 +649,14 @@ namespace RTI
 
             // Draw the plot
             DrawPlot(data);
+
+            // If this is the first time loading
+            // Update the meter axis
+            if (_firstLoad)
+            {
+                // Set the Bin size and blank
+                _firstLoad = !SetBinSizeAndBlank(ens);
+            }
         }
 
         /// <summary>
@@ -1142,12 +1151,11 @@ namespace RTI
                             // show the entire plot
                             if (_firstLoad)
                             {
-                                _firstLoad = false;
                                 minIndex = 1;
                                 maxIndex = TotalNumEnsembles;
 
                                 // Set the Bin size and blank
-                                SetBinSizeAndBlank(sqlite_conn);
+                                _firstLoad = !SetBinSizeAndBlank(sqlite_conn);
                             }
 
                             // Get the magnitude data
@@ -1214,40 +1222,43 @@ namespace RTI
         /// <param name="data">Data to plot by creating a series.</param>
         private void PlotProfileData(double[,] data)
         {
-            // Update the plots in the dispatcher thread
-            try
+            Application.Current.Dispatcher.Invoke((System.Action)delegate
             {
-                // Lock the plot for an update
-                lock (Plot.SyncRoot)
+                // Update the plots in the dispatcher thread
+                try
                 {
-                    // Clear any current series
-                    StatusMsg = "Clear old Plot";
-                    Plot.Series.Clear();
+                    // Lock the plot for an update
+                    lock (Plot.SyncRoot)
+                    {
+                        // Clear any current series
+                        StatusMsg = "Clear old Plot";
+                        Plot.Series.Clear();
 
-                    // Create a heatmap series
-                    HeatMapSeries series = new HeatMapSeries();
-                    series.X0 = 0;                          // Left starts 0
-                    series.X1 = data.GetLength(0);          // Right (num ensembles)
-                    series.Y0 = 0;                          // Top starts 0
-                    series.Y1 = data.GetLength(1);          // Bottom end (num bins)
-                    series.Data = data;
-                    series.Interpolate = false;
+                        // Create a heatmap series
+                        HeatMapSeries series = new HeatMapSeries();
+                        series.X0 = 0;                          // Left starts 0
+                        series.X1 = data.GetLength(0);          // Right (num ensembles)
+                        series.Y0 = 0;                          // Top starts 0
+                        series.Y1 = data.GetLength(1);          // Bottom end (num bins)
+                        series.Data = data;
+                        series.Interpolate = false;
 
-                    // Add the series to the plot
-                    StatusMsg = "Add Plot data";
-                    Plot.Series.Add(series);
+                        // Add the series to the plot
+                        StatusMsg = "Add Plot data";
+                        Plot.Series.Add(series);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                // When shutting down, can get a null reference
-                Debug.WriteLine("Error updating Heatmap Plot", ex);
-            }
+                catch (Exception ex)
+                {
+                    // When shutting down, can get a null reference
+                    Debug.WriteLine("Error updating Heatmap Plot", ex);
+                }
 
-            // After the line series have been updated
-            // Refresh the plot with the latest data.
-            StatusMsg = "Drawing Plot";
-            Plot.InvalidatePlot(true);
+                // After the line series have been updated
+                // Refresh the plot with the latest data.
+                StatusMsg = "Drawing Plot";
+                Plot.InvalidatePlot(true);
+            });
 
             if (data != null)
             {
@@ -1348,14 +1359,17 @@ namespace RTI
                 return;
             }
 
-            // Lock the plot for an update
-            lock (Plot.SyncRoot)
+            Application.Current.Dispatcher.Invoke((System.Action)delegate
             {
-                Plot.Series.Add(series);
-            }
+                // Lock the plot for an update
+                lock (Plot.SyncRoot)
+                {
+                    Plot.Series.Add(series);
+                }
 
-            // Then refresh the plot
-            Plot.InvalidatePlot(true);
+                // Then refresh the plot
+                Plot.InvalidatePlot(true);
+            });
         }
 
         /// <summary>
@@ -1444,7 +1458,7 @@ namespace RTI
         /// Get the bin size and blank of the current project.
         /// </summary>
         /// <param name="cnn">SQLite connection.</param>
-        private void SetBinSizeAndBlank(SQLiteConnection cnn)
+        private bool SetBinSizeAndBlank(SQLiteConnection cnn)
         {
             try
             {
@@ -1453,7 +1467,7 @@ namespace RTI
                 // Ensure a connection was made
                 if (cnn == null)
                 {
-                    return;
+                    return false;
                 }
 
                 using (DbCommand cmd = cnn.CreateCommand())
@@ -1489,16 +1503,41 @@ namespace RTI
             {
                 Debug.WriteLine("Error getting the bin size and blank.", e);
             }
+
+            return true;
         }
 
-        #endregion
+        /// <summary>
+        /// Get the bin size and blank of the ensemble.
+        /// </summary>
+        /// <param name="ens">Ensemble.</param>
+        private bool SetBinSizeAndBlank(DataSet.Ensemble ens)
+        {
+            if(ens != null && ens.IsAncillaryAvail)
+            {
+                _binSize = ens.AncillaryData.BinSize;
+                _blankSize = ens.AncillaryData.FirstBinRange;
+
+                // Set the major step based off the bin size
+                if (_binSize > 0)
+                {
+                    _depthAxis.MajorStep = _binSize * 2.0;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+            #endregion
 
         #region Palette List
 
-        /// <summary>
-        /// Create the palette list.
-        /// </summary>
-        private void CreatePaletteList()
+            /// <summary>
+            /// Create the palette list.
+            /// </summary>
+            private void CreatePaletteList()
         {
             PaletteList = new BindingList<OxyPalette>();
             PaletteList.Add(OxyPalettes.BlackWhiteRed(64));
@@ -1511,6 +1550,75 @@ namespace RTI
             PaletteList.Add(OxyPalettes.HueDistinct(64));
             PaletteList.Add(OxyPalettes.Jet(64));
             PaletteList.Add(OxyPalettes.Rainbow(64));
+        }
+
+        #endregion
+
+        #region Duplicate Plot
+
+        /// <summary>
+        /// Duplicate the plot.
+        /// </summary>
+        /// <param name="vm">Original plot.</param>
+        public void DuplicatePlot(HeatmapPlotViewModel vm)
+        {
+            // Set the file path
+            ProjectFilePath = vm.ProjectFilePath;
+
+            Application.Current.Dispatcher.Invoke((System.Action)delegate
+            {
+
+                // Lock the plot
+                lock (Plot.SyncRoot)
+                {
+                    // Move all the data over
+                    Plot.Series.Clear();
+
+                    // All all the data from the original Plot
+                    foreach (var series in vm.Plot.Series)
+                    {
+                        // Profile series
+                        if (series.GetType() == typeof(HeatMapSeries))
+                        {
+                            HeatMapSeries hmSeries = new HeatMapSeries();
+                            hmSeries.X0 = 0;                                                  // Left starts 0
+                            hmSeries.X1 = ((HeatMapSeries)series).Data.GetLength(0);          // Right (num ensembles)
+                            hmSeries.Y0 = 0;                                                  // Top starts 0
+                            hmSeries.Y1 = ((HeatMapSeries)series).Data.GetLength(1);          // Bottom end (num bins)
+                            hmSeries.Data = ((HeatMapSeries)series).Data;
+                            hmSeries.Interpolate = false;
+
+                            // Add series
+                            Plot.Series.Add(hmSeries);
+                        }
+
+                        // Bottom Track series
+                        if (series.GetType() == typeof(AreaSeries))
+                        {
+                            AreaSeries btSeries = new AreaSeries();
+                            btSeries.Color = ((AreaSeries)series).Color;
+                            btSeries.Color2 = ((AreaSeries)series).Color2;
+                            btSeries.Fill = ((AreaSeries)series).Fill;
+                            btSeries.Tag = ((AreaSeries)series).Tag;
+
+                            foreach (var pt in ((AreaSeries)series).Points)
+                            {
+                                btSeries.Points.Add(pt);
+                            }
+                            foreach (var pt in ((AreaSeries)series).Points2)
+                            {
+                                btSeries.Points2.Add(pt);
+                            }
+
+                            // Add series
+                            Plot.Series.Add(btSeries);
+                        }
+                    }
+                }
+
+                // Then refresh the plot
+                Plot.InvalidatePlot(true);
+            });
         }
 
         #endregion
