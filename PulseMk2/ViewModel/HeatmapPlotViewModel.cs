@@ -92,6 +92,11 @@ namespace RTI
         private string COLOR_LEGEND_KEY = "ColorLegend";
 
         /// <summary>
+        /// Init max columns.
+        /// </summary>
+        private const int MAX_COLUMNS = 100;
+
+        /// <summary>
         /// Store the last good Bottom Track Range Bin value.
         /// This is used as a backup value for Bottom Track Range Bin value if
         /// the current bottom track is bad.
@@ -405,6 +410,27 @@ namespace RTI
 
         #endregion
 
+        #region Max Columns
+
+        /// <summary>
+        /// Maximum number of columns in the Heatmap
+        /// </summary>
+        private int _MaxColumns;
+        /// <summary>
+        /// Maximum number of columns in the Heatmap
+        /// </summary>
+        public int MaxColumns
+        {
+            get { return _MaxColumns; }
+            set
+            {
+                _MaxColumns = value;
+                NotifyOfPropertyChange(() => MaxColumns);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         /// <summary>
@@ -416,6 +442,8 @@ namespace RTI
             // Initialize
             ProjectFilePath = "";
             Plot = CreatePlot();
+
+            MaxColumns = MAX_COLUMNS;
 
             // Selected Plot Type
             //PlotTypeList = Enum.GetValues(typeof(PlotDataType)).Cast<PlotDataType>().ToList();
@@ -454,12 +482,13 @@ namespace RTI
         /// Load the project.  Use the selected min and max index to select the ensemble range to display.
         /// </summary>
         /// <param name="fileName">Project file path.</param>
+        /// <param name="ssConfig">Subsystem configuration.</param>
         /// <param name="minIndex">Minimum Ensemble index.</param>
         /// <param name="maxIndex">Maximum Ensemble index.</param>
-        public override void LoadProject(string fileName, int minIndex = 0, int maxIndex = 0)
+        public override void LoadProject(string fileName, SubsystemConfiguration ssConfig, int minIndex = 0, int maxIndex = 0)
         {
             // Load the base calls
-            base.LoadProject(fileName, minIndex, maxIndex);
+            base.LoadProject(fileName, ssConfig, minIndex, maxIndex);
 
             // Selected Plot Type
             _SelectedPlotType = PlotDataType.Magnitude;
@@ -468,7 +497,7 @@ namespace RTI
             NotifyOfPropertyChange(() => IsMagnitude);
 
             // Draw the plot
-            DrawPlot(fileName, _SelectedPlotType, minIndex, maxIndex);
+            DrawPlot(fileName, _SelectedPlotType, false, minIndex, maxIndex);
         }
 
         #endregion
@@ -482,8 +511,10 @@ namespace RTI
         /// <param name="cnn">SQLite connection.</param>
         /// <param name="maxNumEnsembles">Max number of ensembles to display.</param>
         /// <param name="selectedPlotType">Selected Plot type.</param>
+        /// <param name="minIndex">Minimum Index.</param>
+        /// <param name="maxIndex">Max index.</param>
         /// <returns>The selected for each ensemble and bin.</returns>
-        private PlotData GetData(SQLiteConnection cnn, int maxNumEnsembles, PlotDataType selectedPlotType, int minIndex = 0, int maxIndex = 0)
+        private async Task<PlotData> GetData(string fileName, PlotDataType selectedPlotType, int minIndex = 0, int maxIndex = 0)
         {
             //StatusProgressMax = TotalNumEnsembles;
             StatusProgress = 0;
@@ -491,7 +522,67 @@ namespace RTI
             _backupBtNorth = DbDataHelper.BAD_VELOCITY;
 
             // Get the data to plot
-            return QueryDataFromDb(cnn, selectedPlotType, minIndex, maxIndex);
+            //return QueryDataFromDb(cnn, selectedPlotType, minIndex, maxIndex);
+
+            // Data to get from the project
+            PlotData data = null;
+
+            // Verify a file was given
+            if (!string.IsNullOrEmpty(fileName))
+            {
+                // Verify the file exist
+                if (File.Exists(fileName))
+                {
+                    // Create data Source string
+                    string dataSource = string.Format("Data Source={0};Version=3;", fileName);
+
+                    try
+                    {
+                        // Create a new database connection:
+                        using (SQLiteConnection sqlite_conn = new SQLiteConnection(dataSource))
+                        {
+                            // Open the connection:
+                            sqlite_conn.Open();
+
+                            // Get total number of ensembles in the project
+                            // Run as a task to allow the UI to be updated
+                            // Use await to keep the sqlite connection open
+                            await Task.Run(() => TotalNumEnsembles = GetNumEnsembles(sqlite_conn));
+
+                            // If this is the first time loading
+                            // show the entire plot
+                            if (_firstLoad)
+                            {
+                                minIndex = 1;
+                                maxIndex = TotalNumEnsembles;
+
+                                // Set the Bin size and blank
+                                _firstLoad = !SetBinSizeAndBlank(sqlite_conn);
+                            }
+
+                            // Get the data
+                            // Run as a task to allow the UI to be updated
+                            // Use await to keep the sqlite connection open
+                            await Task.Run(() => data = QueryDataFromDb(sqlite_conn, selectedPlotType, minIndex, maxIndex));
+
+                            // Close connection
+                            sqlite_conn.Close();
+                        }
+                    }
+                    catch (SQLiteException e)
+                    {
+                        Debug.WriteLine("Error using database", e);
+                        return data;
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.WriteLine("Error using database", e);
+                        return data;
+                    }
+                }
+            }
+
+            return data;
         }
 
         /// <summary>
@@ -523,10 +614,11 @@ namespace RTI
             }
 
             // Get the number of ensembles
-            int numEnsembles = GetNumEnsembles(cnn, string.Format("SELECT COUNT(*) FROM tblEnsemble WHERE ({0} IS NOT NULL) {1} {2};",
+            string query = string.Format("SELECT COUNT(*) FROM tblEnsemble WHERE ({0} IS NOT NULL) {1} {2};",
                                                                     datasetColumnName,
                                                                     GenerateQueryFileList(),
-                                                                    GenerateQuerySubsystemList()));
+                                                                    GenerateQuerySubsystemList());
+            int numEnsembles = GetNumEnsembles(cnn, query);
 
             // Update the progress bar
             StatusProgressMax = numEnsembles;
@@ -536,7 +628,7 @@ namespace RTI
             numEnsembles = lo.Limit;
 
             // Get data
-            string query = string.Format("SELECT ID,EnsembleNum,DateTime,EnsembleDS,AncillaryDS,BottomTrackDS,{0} FROM tblEnsemble WHERE ({1} IS NOT NULL) {2} {3} LIMIT {4} OFFSET {5};",
+            query = string.Format("SELECT ID,EnsembleNum,DateTime,EnsembleDS,AncillaryDS,BottomTrackDS,{0} FROM tblEnsemble WHERE ({1} IS NOT NULL) {2} {3} LIMIT {4} OFFSET {5};",
                                             datasetColumnName,
                                             datasetColumnName,
                                             GenerateQueryFileList(),
@@ -636,19 +728,19 @@ namespace RTI
 
         #endregion
 
-        #region Ensemble Data
+        #region Live Ensemble Data
 
         /// <summary>
         /// Add the latest ensemble to the plot.
         /// </summary>
         /// <param name="ens"></param>
-        public override void AddEnsemble(DataSet.Ensemble ens)
+        public async override void AddEnsemble(DataSet.Ensemble ens)
         {
             PlotData data = new PlotData();
             data.ProfileData = GetEnsembleData(ens);
 
             // Draw the plot
-            DrawPlot(data);
+            await Task.Run(() => DrawPlot(data, true));
 
             // If this is the first time loading
             // Update the meter axis
@@ -709,26 +801,8 @@ namespace RTI
                 }
             }
 
-            // Combine the data
-            if (origData != null && magData != null)
-            {
-                return MathHelper.AddColumn(origData, magData);
-            }
-            else if (origData == null && magData != null)
-            {
-                double[,] result = new double[1, magData.Length];
-                for (int x = 0; x < magData.Length; x++)
-                {
-                    result[0, x] = magData[x];      // [ens x bins]
-                }
-                return result;
-            }
-            else
-            {
-                return origData;
-            }
-
-
+            // Add the new data to the original data
+            return CombineData(magData, origData);
         }
 
         /// <summary>
@@ -751,25 +825,7 @@ namespace RTI
             }
 
             // Combine the data
-            if (origData != null && dirData != null)
-            {
-                return MathHelper.AddColumn(origData, dirData);
-            }
-            else if(origData == null && dirData != null)
-            {
-                double[,] result = new double[1, dirData.Length];
-                for(int x = 0; x < dirData.Length; x++)
-                {
-                    result[0, x] = dirData[x];
-                }
-                return result;
-            }
-            else
-            {
-                return origData;
-            }
-
-
+            return CombineData(dirData, origData);
         }
 
         /// <summary>
@@ -808,16 +864,44 @@ namespace RTI
             }
 
             // Combine the data
-            if (origData != null && ampData != null)
+            return CombineData(ampData, origData);
+        }
+
+        /// <summary>
+        /// Combine the new data to the original data.  This will
+        /// add a new column to the data.
+        /// </summary>
+        /// <param name="newData">New data to add.</param>
+        /// <param name="origData">Original data.</param>
+        /// <returns>New data added to Original data.</returns>
+        private double[,] CombineData(double[] newData, double[,] origData)
+        {
+            if (newData != null && origData != null)
             {
-                return MathHelper.AddColumn(origData, ampData);
-            }
-            else if (origData == null && ampData != null)
-            {
-                double[,] result = new double[1, ampData.Length];
-                for (int x = 0; x < ampData.Length; x++)
+                // To reduce the memory foot print
+                // Limit the overall size to 2000 columns
+                int numColumns = newData.GetLength(0) + origData.GetLength(0);
+                if (numColumns > _MaxColumns)
                 {
-                    result[0, x] = ampData[x];
+                    // Remove the columns from the front
+                    int removeColunmsCt = numColumns - _MaxColumns;
+
+                    // Remove the data
+                    origData = RemoveData(origData, removeColunmsCt);
+                }
+            }
+
+            // Combine the data
+            if (origData != null && newData != null)
+            {
+                return MathHelper.AddColumn(origData, newData);
+            }
+            else if (origData == null && newData != null)
+            {
+                double[,] result = new double[1, newData.Length];
+                for (int x = 0; x < newData.Length; x++)
+                {
+                    result[0, x] = newData[x];      // [ens x bins]
                 }
                 return result;
             }
@@ -825,8 +909,134 @@ namespace RTI
             {
                 return origData;
             }
+        }
 
+        /// <summary>
+        /// Combine the new data to the original data.  This will
+        /// add a new column to the data.
+        /// </summary>
+        /// <param name="newData">New data to add.</param>
+        /// <param name="origData">Original data.</param>
+        /// <returns>New data added to Original data.</returns>
+        private double[,] CombineData(double[,] newData, double[,] origData)
+        {
+            if (newData != null && origData != null)
+            {
+                // To reduce the memory foot print
+                // Limit the overall size to 2000 columns
+                int numColumns = newData.GetLength(0) + origData.GetLength(0);
+                if (numColumns > _MaxColumns)
+                {
+                    // Remove the columns from the front
+                    int removeColunmsCt = numColumns - _MaxColumns;
 
+                    // Remove the data
+                    origData = RemoveData(origData, removeColunmsCt);
+                }
+            }
+
+            // Combine the data
+            if (origData != null && newData != null)
+            {
+                for (int x = 0; x < newData.GetLength(0); x++)
+                {
+                    // Get a column from the data
+                    double[] column = new double[newData.GetLength(1)];
+                    for(int bin = 0; bin < newData.GetLength(1); bin++)
+                    {
+                        column[bin] = newData[x, bin];
+                    }
+
+                    // Add the column to the original data
+                    origData = MathHelper.AddColumn(origData, column);
+                }
+
+                return origData;
+            }
+            else if (origData == null && newData != null)
+            {
+                //double[,] result = new double[1, newData.Length];
+                //for (int x = 0; x < newData.Length; x++)
+                //{
+                //    result[0, x] = newData[x];      // [ens x bins]
+                //}
+                //return result;
+                return newData;
+            }
+            else
+            {
+                return origData;
+            }
+        }
+
+        /// <summary>
+        /// Remove the given number of columns from the original data.
+        /// </summary>
+        /// <param name="data">Original data.</param>
+        /// <param name="count">Number of columns to remove from the front.</param>
+        private double[,] RemoveData(double[,] data, int count)
+        {
+            // Number of columns
+            int numColumns = data.GetLength(0);
+            int numBins = data.GetLength(1);
+
+            double[,] result = new double[numColumns - count, numBins];
+
+            int colIndex = count -1;    // Start location
+            for(int col = 0; col < numColumns - count; col++)
+            {
+                for(int bin = 0; bin < numBins; bin++)
+                {
+                    // Use colIndex to start at the new location for first data
+                    result[col, bin] = data[colIndex, bin];
+                }
+
+                // Move to the next column
+                colIndex++;
+            }
+
+            return result;
+        }
+
+        #endregion
+
+        #region Playback Data
+
+        /// <summary>
+        /// Playback the ensemble.
+        /// </summary>
+        /// <param name="startIndex">Start index in the project.</param>
+        /// <param name="endIndex">End index in the project.</param>
+        public async void PlaybackData(int startIndex, int endIndex)
+        {
+            // Get the data
+            PlotData data = null;
+            await Task.Run(() => data = GetData(_ProjectFilePath, _SelectedPlotType, startIndex, endIndex).Result);
+
+            // Get the curernt data from the plot
+            double[,] origData = null;
+            foreach (var series in Plot.Series)
+            {
+                if (series.GetType() == typeof(HeatMapSeries))
+                {
+                    origData = ((HeatMapSeries)series).Data;
+                }
+            }
+
+            // Combine the data already plotted with the new data selected
+            data.ProfileData = CombineData(data.ProfileData, origData);
+
+            // Draw the plot
+            // Accumulate the data
+            await Task.Run(() => DrawPlot(data, true));
+
+            // If this is the first time loading
+            // Update the meter axis
+            //if (_firstLoad)
+            //{
+            //    // Set the Bin size and blank
+            //    _firstLoad = !SetBinSizeAndBlank(ens);
+            //}
         }
 
         #endregion
@@ -1038,6 +1248,9 @@ namespace RTI
             _depthAxis.Key = "DepthAxis";
             temp.Axes.Add(_depthAxis);
 
+            temp.Padding = new OxyThickness(0);
+            temp.PlotMargins = new OxyThickness(60);
+
             return temp;
         }
 
@@ -1115,99 +1328,67 @@ namespace RTI
 
         /// <summary>
         /// Draw the plot based off the settings.
+        /// 
+        /// If isAccum is true, add to the end of the plot the new data.
+        /// If isAccum is false, clear the plot and only plot the found data.
+        /// 
         /// </summary>
         /// <param name="fileName">File name of the project.</param>
         /// <param name="selectedPlotType">Selected plot type.</param>
+        /// <param name="isAccum">Accumulate the plot or clear the plot before plotting the new data.</param>
         /// <param name="minIndex">Minimum index to draw.</param>
         /// <param name="maxIndex">Maximum index to draw.</param>
-        protected async void DrawPlot(string fileName, PlotDataType selectedPlotType, int minIndex = 0, int maxIndex = 0)
+        protected async void DrawPlot(string fileName, PlotDataType selectedPlotType, bool isAccum, int minIndex = 0, int maxIndex = 0)
         {
-            // Data to get from the project
+            // Get the data
             PlotData data = null;
+            await Task.Run(() => data = GetData(fileName, selectedPlotType, minIndex, maxIndex).Result);
 
-            // Verify a file was given
-            if (!string.IsNullOrEmpty(fileName))
-            {
-                // Verify the file exist
-                if (File.Exists(fileName))
-                {
-                    // Create data Source string
-                    string dataSource = string.Format("Data Source={0};Version=3;", fileName);
-
-                    try
-                    {
-                        // Create a new database connection:
-                        using (SQLiteConnection sqlite_conn = new SQLiteConnection(dataSource))
-                        {
-                            // Open the connection:
-                            sqlite_conn.Open();
-
-                            // Get total number of ensembles in the project
-                            // Run as a task to allow the UI to be updated
-                            // Use await to keep the sqlite connection open
-                            await Task.Run(() =>TotalNumEnsembles = GetNumEnsembles(sqlite_conn));
-
-                            // If this is the first time loading
-                            // show the entire plot
-                            if (_firstLoad)
-                            {
-                                minIndex = 1;
-                                maxIndex = TotalNumEnsembles;
-
-                                // Set the Bin size and blank
-                                _firstLoad = !SetBinSizeAndBlank(sqlite_conn);
-                            }
-
-                            // Get the magnitude data
-                            // Run as a task to allow the UI to be updated
-                            // Use await to keep the sqlite connection open
-                            await Task.Run(() => data = GetData(sqlite_conn, TotalNumEnsembles, selectedPlotType, minIndex, maxIndex));
-
-                            // Close connection
-                            sqlite_conn.Close();
-                        }
-                    }
-                    catch (SQLiteException e)
-                    {
-                        Debug.WriteLine("Error using database", e);
-                        return;
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.WriteLine("Error using database", e);
-                        return;
-                    }
-
-                    // Plot the data
-                    DrawPlot(data);
-                }
-            }
+            // Plot the data
+            await Task.Run(() => DrawPlot(data, isAccum));
         }
 
         /// <summary>
         /// Draw the plot with the given plot data.
+        /// 
+        /// Accumulate the plot will append to then end the data.
+        /// If it is off, then it will clear the plot before plotting the new data.
         /// </summary>
         /// <param name="data"></param>
-        private async void DrawPlot(PlotData data)
+        /// <param name="isAccum">If true, then accumulate the data.  If False, clear the plot and display only the data given.</param>
+        private async void DrawPlot(PlotData data, bool isAccum)
         {
-            // If there is no data, do not plot
-            if (data != null)
+            try
             {
-                // Update status
-                StatusMsg = "Drawing Plot";
+                // If there is no data, do not plot
+                if (data != null)
+                {
+                    // Update status
+                    StatusMsg = "Drawing Plot";
 
-                // Plot the Profile data from the project
-                await Task.Run(() => PlotProfileData(data.ProfileData));
+                    if (data.ProfileData != null)
+                    {
+                        // Plot the Profile data from the project
+                        await Task.Run(() => PlotProfileData(data.ProfileData, isAccum));
+                    }
 
-                // Plot the Bottom Track data from the project
-                await Task.Run(() => PlotBtSeries(data.BottomTrackData));
+                    if (data.BottomTrackData != null)
+                    {
+                        // Plot the Bottom Track data from the project
+                        await Task.Run(() => PlotBtSeries(data.BottomTrackData));
+                    }
 
-                // Reset the axis to set the meters axis
-                await Task.Run(() => Plot.ResetAllAxes());
+                    // Reset the axis to set the meters axis
+                    await Task.Run(() => Plot.ResetAllAxes());
+                }
+                else
+                {
+                    StatusMsg = "No data to plot";
+                }
             }
-            else
+            catch(Exception e)
             {
-                StatusMsg = "No data to plot";
+                log.Error("Error drawing the heatmap plot.", e);
             }
         }
 
@@ -1218,9 +1399,12 @@ namespace RTI
         /// <summary>
         /// Plot the given data.
         /// [ens x bin]
+        /// 
+        /// If accumulating the data, the plot will not be cleared when new data is added.
         /// </summary>
         /// <param name="data">Data to plot by creating a series.</param>
-        private void PlotProfileData(double[,] data)
+        /// <param name="isAccum">Accumulate the data or display only once the data.</param>
+        private void PlotProfileData(double[,] data, bool isAccum)
         {
             Application.Current.Dispatcher.Invoke((System.Action)delegate
             {
@@ -1232,7 +1416,10 @@ namespace RTI
                     {
                         // Clear any current series
                         StatusMsg = "Clear old Plot";
-                        Plot.Series.Clear();
+                        if (!isAccum)
+                        {
+                            Plot.Series.Clear();
+                        }
 
                         // Create a heatmap series
                         HeatMapSeries series = new HeatMapSeries();
@@ -1314,7 +1501,7 @@ namespace RTI
             // Replot the data
             if (!string.IsNullOrEmpty(ProjectFilePath))
             {
-                DrawPlot(ProjectFilePath, eplotDataType);
+                DrawPlot(ProjectFilePath, eplotDataType, false);
             }
 
         }
@@ -1329,7 +1516,7 @@ namespace RTI
             // Replot the data
             if (!string.IsNullOrEmpty(ProjectFilePath))
             {
-                DrawPlot(ProjectFilePath, _SelectedPlotType, minIndex, maxIndex);
+                DrawPlot(ProjectFilePath, _SelectedPlotType, true, minIndex, maxIndex);
             }
         }
 
@@ -1341,7 +1528,7 @@ namespace RTI
             // Replot the data
             if (!string.IsNullOrEmpty(ProjectFilePath))
             {
-                DrawPlot(ProjectFilePath, _SelectedPlotType);
+                DrawPlot(ProjectFilePath, _SelectedPlotType, false);
             }
         }
 

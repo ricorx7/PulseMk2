@@ -649,11 +649,11 @@ namespace RTI
         /// <summary>
         /// Send Force BREAK command.
         /// </summary>
-        public void ForceBreakCommand()
+        public async void ForceBreakCommand()
         {
             if (_serialPort != null && _serialPort.IsAvailable())
             {
-                Task.Run(() => _serialPort.SendForceBreak());
+                await Task.Run(() => _serialPort.SendForceBreak());
             }
             else
             {
@@ -680,11 +680,11 @@ namespace RTI
         /// <summary>
         /// Send a command to the ADCP.
         /// </summary>
-        public void SendACommand()
+        public async void SendACommand()
         {
             if (_serialPort != null && _serialPort.IsAvailable())
             {
-                Task.Run(() => _serialPort.SendDataWaitReply(SelectedAdcpCommand));
+                await Task.Run(() => _serialPort.SendDataWaitReply(SelectedAdcpCommand));
 
                 // Clear the command
                 SelectedAdcpCommand = "";

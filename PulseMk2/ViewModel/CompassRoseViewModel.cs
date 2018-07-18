@@ -75,11 +75,6 @@ namespace RTI
         #region Variables
 
         /// <summary>
-        ///  Setup logger
-        /// </summary>
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        /// <summary>
         /// Default max length.
         /// </summary>
         private const int DEFAULT_MAX_LENGTH = 5;
@@ -306,38 +301,45 @@ namespace RTI
                 // Have a 2 second timeout to see if we need to shutdown the thread
                 _eventWaitData.WaitOne(2000);
 
-                while (!_buffer.IsEmpty)
+                try
                 {
-                    // Get the latest data from the buffer
-                    HPR hpr;
-                    if (_buffer.TryDequeue(out hpr))
+                    while (!_buffer.IsEmpty)
                     {
-
-                        if (_IsAveraging)
+                        // Get the latest data from the buffer
+                        HPR hpr;
+                        if (_buffer.TryDequeue(out hpr))
                         {
-                            try
+
+                            if (_IsAveraging)
                             {
-                                // Lock the data to prevent the list from being modified
-                                // while the averaging is being done
-                                lock (_AverageLock)
+                                try
                                 {
-                                    AddHeading(hpr.Heading);
-                                    AddPitch(hpr.Pitch);
-                                    AddRoll(hpr.Roll);
+                                    // Lock the data to prevent the list from being modified
+                                    // while the averaging is being done
+                                    lock (_AverageLock)
+                                    {
+                                        AddHeading(hpr.Heading);
+                                        AddPitch(hpr.Pitch);
+                                        AddRoll(hpr.Roll);
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    log.Error("Error averaging in compass rose.", e);
                                 }
                             }
-                            catch (Exception e)
+                            else
                             {
-                                log.Error("Error averaging in compass rose.", e);
+                                Heading = hpr.Heading;
+                                Pitch = hpr.Pitch;
+                                Roll = hpr.Roll;
                             }
                         }
-                        else
-                        {
-                            Heading = hpr.Heading;
-                            Pitch = hpr.Pitch;
-                            Roll = hpr.Roll;
-                        }
                     }
+                }
+                catch (Exception e)
+                {
+                    log.Error("Error setting values in compass rose.", e);
                 }
             }
         }

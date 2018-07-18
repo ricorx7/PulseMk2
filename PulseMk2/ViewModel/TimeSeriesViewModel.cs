@@ -164,6 +164,11 @@ namespace RTI
             {
                 return !(x == y);
             }
+
+            public override int GetHashCode()
+            {
+                return base.GetHashCode();
+            }
         }
 
 
@@ -612,12 +617,13 @@ namespace RTI
         /// Load the project.  Use the selected min and max index to select the ensemble range to display.
         /// </summary>
         /// <param name="fileName">Project file path.</param>
+        /// <param name="ssConfig">Subsystem configuration.</param>
         /// <param name="minIndex">Minimum Ensemble index.</param>
         /// <param name="maxIndex">Maximum Ensemble index.</param>
-        public override void LoadProject(string fileName, int minIndex = 0, int maxIndex = 0)
+        public override void LoadProject(string fileName, SubsystemConfiguration ssConfig, int minIndex = 0, int maxIndex = 0)
         {
             // Load the base calls
-            base.LoadProject(fileName, minIndex, maxIndex);
+            base.LoadProject(fileName, ssConfig, minIndex, maxIndex);
 
             // Plot the data
             ReplotData(minIndex, maxIndex);

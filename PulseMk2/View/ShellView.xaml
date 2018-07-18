@@ -3,6 +3,7 @@
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                       xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
                       xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                      xmlns:cal="http://www.caliburnproject.org"
                       Title="Pulse MK2"
                       WindowTransitionsEnabled="False"
                       WindowStartupLocation="CenterScreen"
@@ -13,7 +14,7 @@
     <DockPanel Margin="5">
         <Menu DockPanel.Dock="Top" >
             <MenuItem Header="_File">
-                <MenuItem Header="_Open Project" x:Name="PlaybackFile">
+                <MenuItem Header="_Open Project" x:Name="OpenFiles">
                     <MenuItem.Icon>
                         <iconPacks:Material Kind="FolderOpen" />
                     </MenuItem.Icon>
@@ -98,8 +99,39 @@
                 </MenuItem>
             </MenuItem>
         </Menu>
+        
+        <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar>
+                <ToggleButton IsChecked="{Binding IsPlayback}">
+                    <iconPacks:Material Kind="Play" />
+                </ToggleButton>
+                <Controls:RangeSlider
+                    Name="rangeSlider"
+                    Width="100"
+                    Minimum="0"
+                    Maximum="{Binding NumEnsembles}"
+                    LowerValue="{Binding LowerSelectedEnsemble}"
+                    UpperValue="{Binding UpperSelectedEnsemble}"
+                    IsSnapToTickEnabled="True">
+                </Controls:RangeSlider>
+                <TextBlock Text="{Binding LowerValue, ElementName=rangeSlider, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Text="{Binding UpperValue, ElementName=rangeSlider, UpdateSourceTrigger=PropertyChanged}"/>
 
-        <ContentControl x:Name="ActiveItem" />
+                <Button x:Name="ClearPlots" ToolTip="Clear the plot.">
+                    <iconPacks:Material Kind="Broom" />
+                </Button>
+            </ToolBar>
+            
+            <ToolBar>
+                <Controls:ToggleSwitch OnLabel="Recording File" OffLabel="Stop Recording"  />
+            </ToolBar>
+        </ToolBarTray>
+
+        <Grid DockPanel.Dock="Bottom">
+            <ContentControl cal:View.Model="{Binding StatusBarVM}" />
+        </Grid>
+
+            <ContentControl x:Name="ActiveItem" />
     </DockPanel>
 
 </Controls:MetroWindow>

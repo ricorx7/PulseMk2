@@ -169,7 +169,11 @@
     </ApplicationDefinition>
     <Compile Include="AppBootstrapper.cs" />
     <Compile Include="DataFormatOptions.cs" />
+    <Compile Include="Events\PlaybackTotalEnsemblesEvent.cs" />
+    <Compile Include="Events\StatusMessageEvent.cs" />
+    <Compile Include="Events\StatusProgressBarEvent.cs" />
     <Compile Include="Interfaces\IAverageEnsLayer.cs" />
+    <Compile Include="Interfaces\ILoadFilesLayer.cs" />
     <Compile Include="Interfaces\IPlaybackLayer.cs" />
     <Compile Include="Interfaces\IProcessEnsLayer.cs" />
     <Compile Include="Interfaces\IProjectLayer.cs" />
@@ -202,7 +206,9 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ViewModel\ShipTrackGmapPlotViewModel.cs" />
     <Compile Include="ViewModel\ShipTrackPlotViewModel.cs" />
+    <Compile Include="ViewModel\StatusBarViewModel.cs" />
     <Compile Include="ViewModel\TabularViewModel.cs" />
     <Compile Include="ViewModel\TerminalAdcpViewModel.cs" />
     <Compile Include="ViewModel\TimeSeriesViewModel.cs" />
@@ -229,7 +235,13 @@
     <Compile Include="View\ProfilePlotView.xaml.cs">
       <DependentUpon>ProfilePlotView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\ShipTrackPlotView.xaml.cs" />
+    <Compile Include="View\ShipTrackGmapPlotView.xaml.cs" />
+    <Compile Include="View\ShipTrackPlotView.xaml.cs">
+      <DependentUpon>ShipTrackPlotView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\StatusBarView.xaml.cs">
+      <DependentUpon>StatusBarView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\TabularView.xaml.cs">
       <DependentUpon>TabularView.xaml</DependentUpon>
     </Compile>
@@ -277,9 +289,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="View\ShipTrackPlotView.xaml">
+    <Page Include="View\ShipTrackGmapPlotView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\ShipTrackPlotView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\StatusBarView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\TabularView.xaml">
       <SubType>Designer</SubType>
