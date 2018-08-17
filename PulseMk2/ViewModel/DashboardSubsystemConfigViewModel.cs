@@ -11,9 +11,14 @@ using System.Windows;
 
 namespace RTI
 {
-    public class DashboardSubsystemConfigViewModel : Caliburn.Micro.Screen, IDisposable
+    public class DashboardSubsystemConfigViewModel : Caliburn.Micro.Screen, IPlaybackLayer, IDisposable
     {
         #region Variables
+
+        /// <summary>
+        ///  Setup logger
+        /// </summary>
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
         /// Latest ensemble.
@@ -254,14 +259,19 @@ namespace RTI
         public HeatmapPlotViewModel HeatmapPlotExapnded { get; set; }
 
         /// <summary>
+        /// Ship Track Google Map plot.
+        /// </summary>
+        public ShipTrackGmapPlotViewModel ShipTrackGmapPlot { get; set; }
+
+        /// <summary>
+        /// Expanded Ship Track Google Map plot.
+        /// </summary>
+        public ShipTrackGmapPlotViewModel ShipTrackPlotExpanded { get; set; }
+
+        /// <summary>
         /// Ship Track plot.
         /// </summary>
         public ShipTrackPlotViewModel ShipTrackPlot { get; set; }
-
-        /// <summary>
-        /// Expanded Ship Track plot.
-        /// </summary>
-        public ShipTrackPlotViewModel ShipTrackPlotExpanded { get; set; }
 
         /// <summary>
         /// Time series plot.
@@ -317,10 +327,12 @@ namespace RTI
             HeatmapPlot.IsShowStatusbar = false;
             HeatmapPlotExapnded = null;
 
-            ShipTrackPlot = IoC.Get<ShipTrackPlotViewModel>();
-            ShipTrackPlot.IsShowMenu = false;
-            ShipTrackPlot.IsShowStatusbar = false;
+            ShipTrackGmapPlot = IoC.Get<ShipTrackGmapPlotViewModel>();
+            ShipTrackGmapPlot.IsShowMenu = false;
+            ShipTrackGmapPlot.IsShowStatusbar = false;
             ShipTrackPlotExpanded = null;
+
+            ShipTrackPlot = IoC.Get<ShipTrackPlotViewModel>();
 
             TimeSeriesPlot = IoC.Get<TimeSeriesViewModel>();
             TimeSeriesPlot.IsShowMenu = false;
@@ -565,9 +577,9 @@ namespace RTI
         public void ExpandShipTrackPlot()
         {
             // Create the Heatmap plot and attach to deactivate
-            ShipTrackPlotExpanded = IoC.Get<ShipTrackPlotViewModel>();
-            ShipTrackPlot.IsShowMenu = false;
-            ShipTrackPlot.IsShowStatusbar = false;
+            ShipTrackPlotExpanded = IoC.Get<ShipTrackGmapPlotViewModel>();
+            ShipTrackGmapPlot.IsShowMenu = false;
+            ShipTrackGmapPlot.IsShowStatusbar = false;
             ShipTrackPlotExpanded.Deactivated += ExpandShipTrackPlot_Deactivated;
 
             // Show the window and update the button
@@ -580,7 +592,7 @@ namespace RTI
             NotifyOfPropertyChange(() => this.CanExpandShipTrackPlot);
 
             // Duplicate the plot
-            ShipTrackPlotExpanded.DuplicatePlot(ShipTrackPlot);
+            ShipTrackPlotExpanded.DuplicatePlot(ShipTrackGmapPlot);
         }
 
         /// <summary>
@@ -651,6 +663,37 @@ namespace RTI
 
         #endregion
 
+        #region Playback
+
+        /// <summary>
+        /// Playback the data.
+        /// </summary>
+        /// <param name="minIndex"></param>
+        /// <param name="maxIndex"></param>
+        public void Playback(int minIndex, int maxIndex)
+        {
+            HeatmapPlot.PlaybackData(minIndex, maxIndex);
+        }
+
+        #endregion
+
+        #region Clear Plot
+
+        /// <summary>
+        /// Clear all the plots.
+        /// </summary>
+        public void ClearPlots()
+        {
+            HeatmapPlot.ClearPlot();
+            TimeSeriesPlot.ClearPlot();
+            ShipTrackPlot.ClearPlot();
+            AmplitudePlot.ClearPlot();
+            CorrelationPlot.ClearPlot();
+            Profile3dPlot.ClearPlot();   
+        }
+
+        #endregion
+
         #region Eventhandler
 
         /// <summary>
@@ -679,9 +722,10 @@ namespace RTI
         /// <param name="project"></param>
         public void LoadProject(Project project)
         {
-            HeatmapPlot.LoadProject(project.GetProjectFullPath());
-            ShipTrackPlot.LoadProject(project.GetProjectFullPath());
-            TimeSeriesPlot.LoadProject(project.GetProjectFullPath());
+            HeatmapPlot.LoadProject(project.GetProjectFullPath(), Config.Config);
+            ShipTrackGmapPlot.LoadProject(project.GetProjectFullPath(), Config.Config);
+            TimeSeriesPlot.LoadProject(project.GetProjectFullPath(), Config.Config);
+            ShipTrackPlot.LoadProject(project.GetProjectFullPath(), Config.Config);
         }
 
         #endregion

@@ -21,6 +21,11 @@ namespace RTI
         #region Variables
 
         /// <summary>
+        ///  Setup logger
+        /// </summary>
+        protected static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        /// <summary>
         /// Max Ensembles to display.
         /// </summary>
         ///private int MAX_ENS = 510000;
@@ -253,6 +258,27 @@ namespace RTI
             {
                 _plot = value;
                 this.NotifyOfPropertyChange(() => this.Plot);
+            }
+        }
+
+        #endregion
+
+        #region Subsystem Configuration
+
+        /// <summary>
+        /// Subsystem configuration for this plot.
+        /// </summary>
+        protected SubsystemConfiguration _SubsystemConfig;
+        /// <summary>
+        /// Subsystem configuration for this plot.
+        /// </summary>
+        public SubsystemConfiguration SubsystemConfig
+        {
+            get { return _SubsystemConfig; }
+            set
+            {
+                _SubsystemConfig = value;
+                this.NotifyOfPropertyChange(() => this.SubsystemConfig);
             }
         }
 
@@ -493,7 +519,7 @@ namespace RTI
                 ProjectFilePath = openFileDialog.FileName;
 
                 // Load the project
-                LoadProject(ProjectFilePath);
+                LoadProject(ProjectFilePath, null);
             }
         }
 
@@ -505,13 +531,17 @@ namespace RTI
         /// Load the project and get all the data.
         /// </summary>
         /// <param name="fileName">File path of the project.</param>
+        /// <param name="ssConfig">Subsystem configuration. If Null display all the data</param>
         /// <param name="minIndex">Minimum ensemble index to display.</param>
         /// <param name="maxIndex">Minimum ensemble index to display.</param>
-        public virtual void LoadProject(string fileName, int minIndex = 0, int maxIndex = 0)
+        public virtual void LoadProject(string fileName, SubsystemConfiguration ssConfig, int minIndex = 0, int maxIndex = 0)
         {
             // Set the selected values
             _ProjectFilePath = fileName;
             this.NotifyOfPropertyChange(() => this.ProjectFilePath);
+
+            // Set the select Subsystem configuration
+            SubsystemConfig = ssConfig;
 
             // Reset settings
             _firstLoad = true;
@@ -530,8 +560,11 @@ namespace RTI
                 SubsystemConfigList.Clear();
             });
 
-
+            // Populate the list of all available subsystem configurations
             GetSubsystemConfigList(fileName);
+
+            // Select the configuration based off the subsystem configuration given
+            SelectSubsystemConfig(ssConfig);
         }
 
         #endregion
@@ -794,7 +827,7 @@ namespace RTI
                 return "";
             }
 
-            // Build up the list of selected files
+            // Build up the list of subsystems
             StringBuilder sb = new StringBuilder();
             foreach (var item in SubsystemConfigList)
             {
@@ -816,6 +849,23 @@ namespace RTI
             }
 
             return "";
+        }
+
+        private void SelectSubsystemConfig(SubsystemConfiguration ssConfig)
+        {
+            if(ssConfig == null)
+            {
+                return;
+            }
+
+            // Uncheck all the subsystem configs that do match the CEPO index and Subsystem code.
+            foreach(var ss in SubsystemConfigList)
+            {
+                if(ss.CepoIndex != SubsystemConfig.CepoIndex.ToString() || ss.Subsystem != SubsystemConfig.SubSystem.CodeToString())
+                {
+                    ss.IsChecked = false;
+                }
+            }
         }
 
         #endregion
@@ -927,7 +977,15 @@ namespace RTI
             int offset = 0;                         // Start location in the project
             if (minIndex != 0 && maxIndex != 0)
             {
-                limit = maxIndex - minIndex;        // Get the total number of ensembles selected
+                if (maxIndex != minIndex)
+                {
+                    limit = maxIndex - minIndex;        // Get the total number of ensembles selected
+                }
+                else
+                {
+                    limit = 1;                          // Same number so it must be a single index
+                }
+
                 offset = minIndex;                  // Get the start location
                 numEnsembles = limit;               // Set the new number of ensembles selected
 
@@ -946,6 +1004,22 @@ namespace RTI
         }
 
         #endregion
+
+        /// <summary>
+        /// Clear the plot.
+        /// </summary>
+        public virtual void ClearPlot()
+        {
+            if (Plot != null)
+            {
+                lock (Plot.SyncRoot)
+                {
+                    Plot.Series.Clear();
+                }
+
+                Plot.InvalidatePlot(true);
+            }
+        }
 
         /// <summary>
         /// Implement reploting the data.

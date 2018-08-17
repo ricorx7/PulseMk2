@@ -4,11 +4,13 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using Caliburn.Micro;
 using RTI.DataSet;
 
 namespace RTI
 {
-    public class DashboardViewModel : Caliburn.Micro.Screen, IProcessEnsLayer, IProjectLayer, IDisposable
+    public class DashboardViewModel : Caliburn.Micro.Screen, IProcessEnsLayer, IProjectLayer, IPlaybackLayer, IDisposable
     {
         #region Variable
 
@@ -16,6 +18,11 @@ namespace RTI
         ///  Setup logger
         /// </summary>
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        /// <summary>
+        /// Event manager.
+        /// </summary>
+        private readonly IEventAggregator _eventAggregator;
 
         /// <summary>
         /// Dictionary to hold the subsystem config and the view model.
@@ -87,8 +94,10 @@ namespace RTI
         /// <summary>
         /// Initialize.
         /// </summary>
-        public DashboardViewModel()
+        public DashboardViewModel(IEventAggregator eventAggregator)
         {
+            _eventAggregator = eventAggregator;
+
             // Create the dict
             _dictSsConfig = new Dictionary<ViewSubsystemConfig, DashboardSubsystemConfigViewModel>();
 
@@ -120,6 +129,8 @@ namespace RTI
         public void LoadProject(Project project)
         {
             Status = string.Format("Loading project {0}...", project.GetProjectFullPath());
+            log.Debug(Status);
+            _eventAggregator.PublishOnUIThreadAsync(new StatusMessageEvent(Status));
 
             // Only load the maximum number of configurations to see
             // all the configurations
@@ -134,7 +145,10 @@ namespace RTI
             for (int x = 1; x <= numEns; x++)
             {
                 // Process the first 12 ensembles because there can only be up to 12 configurations
-                ViewSubsystemConfig config = ProcessEnsemble(project.GetEnsemble(x), EnsembleSource.Playback, AdcpCodec.CodecEnum.Binary);
+                ProcessEnsemble(project.GetEnsemble(x), EnsembleSource.Playback, AdcpCodec.CodecEnum.Binary);
+
+                // Create subsystem config
+                ViewSubsystemConfig config = new ViewSubsystemConfig(project.GetEnsemble(x).EnsembleData.SubsystemConfig, EnsembleSource.Playback);
 
                 if (config != null)
                 {
@@ -147,15 +161,18 @@ namespace RTI
                     // Keep track of the previous config so we do not reload the same configuration
                     prevConfig = config;
 
-                    log.Debug(string.Format("Add configuration {0}", config.Config.DescString()));
+                    Status = string.Format("Add configuration {0}", config.Config.DescString());
+                    log.Debug(Status);
+                    _eventAggregator.PublishOnUIThreadAsync(new StatusMessageEvent(Status));
                 }
             }
 
             // Select the last config add
             SelectedSsConfigIndex = SsConfigList.Count();
 
-            Status = string.Format("Project {0}", project.GetProjectFullPath());
-            log.Debug(string.Format("Add Project {0}", project.GetProjectFullPath()));
+            Status = string.Format("Add Project {0}", project.GetProjectFullPath());
+            log.Debug(string.Format(Status));
+            _eventAggregator.PublishOnUIThreadAsync(new StatusMessageEvent(Status));
         }
 
         #endregion
@@ -169,6 +186,7 @@ namespace RTI
         {
             Status = string.Format("Remove configuration {0}...", _SelectedSsConfig.Config.Config.DescString());
             log.Debug(string.Format("Remove configuration {0}...", _SelectedSsConfig.Config.Config.DescString()));
+            _eventAggregator.PublishOnUIThreadAsync(new StatusMessageEvent(Status));
 
             // Remove it from the dictionary
             _dictSsConfig.Remove(_SelectedSsConfig.Config);
@@ -185,6 +203,21 @@ namespace RTI
 
         #endregion
 
+        #region Clear Plots
+
+        /// <summary>
+        /// Clear all the plots in the dashboard.
+        /// </summary>
+        public void ClearPlots()
+        {
+            foreach(var vm in _dictSsConfig.Values)
+            {
+                vm.ClearPlots();
+            }
+        }
+
+        #endregion
+
         #region Event Handler
 
         /// <summary>
@@ -194,7 +227,7 @@ namespace RTI
         /// <param name="source"></param>
         /// <param name="dataFormat"></param>
         /// <returns></returns>
-        public ViewSubsystemConfig ProcessEnsemble(Ensemble ensemble, EnsembleSource source, AdcpCodec.CodecEnum dataFormat)
+        public void ProcessEnsemble(Ensemble ensemble, EnsembleSource source, AdcpCodec.CodecEnum dataFormat)
         {
             if (ensemble != null && ensemble.IsEnsembleAvail)
             {
@@ -209,7 +242,13 @@ namespace RTI
 
                     // Add the vm to the list
                     _dictSsConfig.Add(config, vm);
-                    SsConfigList.Add(vm);
+
+                    // Add to the list of subsystems
+                    Application.Current.Dispatcher.Invoke((System.Action)delegate
+                    {
+                        SsConfigList.Add(vm);
+                    });
+
                     log.Debug(string.Format("Add configuration {0}", config.Config.DescString()));
 
                     // Select the last config add
@@ -218,7 +257,7 @@ namespace RTI
                     // Pass the ensemble to the viewmodel
                     vm.ProcessEnsemble(ensemble, source);
 
-                    return config;
+                    //return config;
                 }
                 else
                 {
@@ -229,12 +268,20 @@ namespace RTI
                         vm.ProcessEnsemble(ensemble, source);
                     }
 
-                    return config;
+                    //return config;
                 }
             }
 
             // Not a valid ensemble
-            return null;
+            //return null;
+        }
+
+        public void Playback(int minIndex, int maxIndex)
+        {
+            foreach(var vm in _dictSsConfig.Values)
+            {
+                vm.Playback(minIndex, maxIndex);
+            }
         }
 
         #endregion

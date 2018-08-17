@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace RTI
 {
     /// <summary>
-    /// Interaction logic for ShipTrackPlotView.xaml
+    /// Interaction logic for StatusBarView.xaml
     /// </summary>
-    public partial class ShipTrackPlotView : UserControl
+    public partial class StatusBarView : UserControl
     {
-        public ShipTrackPlotView()
+        public StatusBarView()
         {
             InitializeComponent();
         }

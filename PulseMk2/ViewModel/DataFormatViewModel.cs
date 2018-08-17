@@ -12,7 +12,7 @@ namespace RTI
     /// <summary>
     /// Data format to decode the data.
     /// </summary>
-    public class DataFormatViewModel : Caliburn.Micro.Screen, IDisposable, ICodecLayer, IPlaybackLayer, IActivate, IDeactivate
+    public class DataFormatViewModel : Caliburn.Micro.Screen, IDisposable, ICodecLayer, ILoadFilesLayer, IActivate, IDeactivate
     {
         #region Variables
 
@@ -20,6 +20,11 @@ namespace RTI
         ///  Setup logger
         /// </summary>
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        /// <summary>
+        /// Event Aggregator.
+        /// </summary>
+        private readonly IEventAggregator _eventAggregator;
 
         /// <summary>
         /// Options.
@@ -35,6 +40,18 @@ namespace RTI
         /// Timer to update the data.
         /// </summary>
         private System.Timers.Timer _displayTimer;
+
+        /// <summary>
+        /// Current ensemble count when writing the ensembles to the database.
+        /// This is to give the status.
+        /// </summary>
+        private int _currEnsCount;
+
+        /// <summary>
+        /// Current project name.  
+        /// This is used to give the status.
+        /// </summary>
+        private string _curProjectName;
 
         #endregion
 
@@ -254,14 +271,18 @@ namespace RTI
         /// <summary>
         /// Initialize.
         /// </summary>
-        public DataFormatViewModel()
+        public DataFormatViewModel(IEventAggregator eventAggregator)
         {
+            _eventAggregator = eventAggregator;
+
             _options = new DataFormatOptions();
 
             // Initialize the codec
             _codec = new AdcpCodec();
 
             // Init values
+            _curProjectName = "";
+            _currEnsCount = 0;
             IsRtb = _options.IsRTB;
             _RtbDataCount = 0;
             _RtbDataBytes = 0;
@@ -414,6 +435,9 @@ namespace RTI
                             // This project already exist
                             return prj;
                         }
+
+                        // Close the wrong project
+                        prj.Dispose();
                     }
 
                     // Create a unique filename
@@ -424,18 +448,35 @@ namespace RTI
                 // the project name and project directory
                 project = new Project(filename, RTI.Commons.GetProjectDefaultFolderPath(), null);
 
+                // Monitor for ensembles written to the project
+                _currEnsCount = ensembles.Count();
+                _curProjectName = project.ProjectName;
+                _eventAggregator.PublishOnUIThread(new StatusProgressBarEvent(0, _currEnsCount, 0, _curProjectName));   // Reset status
+                project.ProjectEnsembleWriteEvent += Project_ProjectEnsembleWriteEvent;
+
                 // Write the ensembles to the project
-                AdcpDatabaseWriter writer = new AdcpDatabaseWriter(false);
-                writer.WriteFileToDatabase(project, ensembles);
+                project.RecordDbEnsemble(ensembles);
 
                 // Add project to DB
                 //AddNewProject(project);
 
+                log.Info(string.Format("Created Project: {0} {1}", project, filename));
+
+                project.ProjectEnsembleWriteEvent -= Project_ProjectEnsembleWriteEvent;
                 project.Dispose();
 
             }
 
             return project;
+        }
+
+        /// <summary>
+        /// Update the status progress bar with the writing of the ensembles to the database.
+        /// </summary>
+        /// <param name="count">Current ensemble count written.</param>
+        private void Project_ProjectEnsembleWriteEvent(object sender, Project.WriteEventArgs e)
+        {
+            _eventAggregator.PublishOnUIThread(new StatusProgressBarEvent(0, _currEnsCount, e.Count, _curProjectName));
         }
 
         #endregion
@@ -456,27 +497,27 @@ namespace RTI
                 case AdcpCodec.CodecEnum.Binary:                                // RTB
                     _RtbDataBytes += binaryEnsemble.Length;
                     _RtbDataCount++;
-                    log.Debug(string.Format("Binary Codec: Count: {0} Ensemble: {1}", binaryEnsemble.Length, ensemble));
+                    log.Debug(string.Format("Binary Codec: Ensemble Size: {0}", binaryEnsemble.Length));
                     break;
                 case AdcpCodec.CodecEnum.DVL:                                   // RTD
                     _RtdDataBytes += binaryEnsemble.Length;
                     _RtdDataCount++;
-                    log.Debug(string.Format("DVL Codec: Count: {0} Ensemble: {1}", binaryEnsemble.Length, ensemble));
+                    log.Debug(string.Format("DVL Codec: Ensemble Size: {0}", binaryEnsemble.Length));
                     break;
                 case AdcpCodec.CodecEnum.PD0:                                   // PD0
                     _Pd0DataBytes += binaryEnsemble.Length;
                     _Pd0DataCount++;
-                    log.Debug(string.Format("PD0 Codec: Count: {0} Ensemble: {1}", binaryEnsemble.Length, ensemble));
+                    log.Debug(string.Format("PD0 Codec: Ensemble Size: {0}", binaryEnsemble.Length));
                     break;
                 case AdcpCodec.CodecEnum.PD6_13:                                   // PD6/13
                     _Pd6_13DataBytes += binaryEnsemble.Length;
                     _Pd6_13DataCount++;
-                    log.Debug(string.Format("PD6_13 Codec: Count: {0} Ensemble: {1}", binaryEnsemble.Length, ensemble));
+                    log.Debug(string.Format("PD6_13 Codec: Ensemble Size: {0}", binaryEnsemble.Length));
                     break;
                 case AdcpCodec.CodecEnum.PD4_5:                                   // PD4/5
                     _Pd4_5DataBytes += binaryEnsemble.Length;
                     _Pd4_5DataCount++;
-                    log.Debug(string.Format("PD4_5 Codec: Count: {0} Ensemble: {1}", binaryEnsemble.Length, ensemble));
+                    log.Debug(string.Format("PD4_5 Codec: Ensemble Size: {0}", binaryEnsemble.Length));
                     break;
                 default:
                     break;
@@ -543,6 +584,7 @@ namespace RTI
                 // Try to optimize and first load the file into the Binary only codec
                 // If this does not work, then try all the codecs
                 FilePlayback fp = new FilePlayback();
+                fp.ProcessFileEvent += Fp_ProcessFileEvent;
                 fp.FindRtbEnsembles(files);
 
                 // Wait for ensembles to be added
@@ -560,21 +602,20 @@ namespace RTI
                     // Create a project if new, or load if old
                     project = CreateProject(files[0], fp.GetAllEnsembles());
 
-                    // Set the selected playback to the pulsemanager
-                    //_pm.SelectedProject = project;
-                    //_pm.SelectedPlayback = fp;
+                    // Publish event of found ensembles
+                    _eventAggregator.PublishOnUIThread(new PlaybackTotalEnsemblesEvent(fp.TotalEnsembles));
                 }
                 else
                 {
                     // Find the ensembles using all the codecs
                     fp.FindEnsembles(files);
-
                     project = CreateProject(files[0], fp.GetAllEnsembles());
 
-                    // Set the selected playback to the pulsemanager
-                    //_pm.SelectedProject = project;
+                    // Publish event of found ensembles
+                    _eventAggregator.PublishOnUIThread(new PlaybackTotalEnsemblesEvent(fp.TotalEnsembles));
                 }
 
+                fp.ProcessFileEvent -= Fp_ProcessFileEvent;
                 fp.Dispose();
             }
 
@@ -590,6 +631,17 @@ namespace RTI
             project.Dispose();
 
             return project;
+        }
+
+        /// <summary>
+        /// Send an event based off the file processing.
+        /// </summary>
+        /// <param name="fileCount">Total number of files.</param>
+        /// <param name="fileIndex">Current index of the process.</param>
+        /// <param name="fileName">File name.</param>
+        private void Fp_ProcessFileEvent(int fileCount, int fileIndex, string fileName)
+        {
+            _eventAggregator.PublishOnUIThread(new StatusProgressBarEvent(0, fileCount, fileIndex, fileName));
         }
 
         #endregion

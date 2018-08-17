@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 
 namespace RTI
 {
-    public interface IPlaybackLayer
+
+    /// <summary>
+    /// Plaback a selected amount of ensembles.
+    /// </summary>
+    interface IPlaybackLayer
     {
-        /// <summary>
-        /// Load the file.
-        /// </summary>
-        /// <param name="filePath"></param>
-        Project LoadFiles(string[] files);
+
+        void Playback(int minIndex, int maxIndex);
     }
 }

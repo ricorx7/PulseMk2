@@ -91,6 +91,11 @@ namespace RTI
             public double BtNorthVel { get; set; }
 
             /// <summary>
+            /// First ping time.
+            /// </summary>
+            public double BtFirstPingTime { get; set; }
+
+            /// <summary>
             /// Initialize the values.
             /// </summary>
             public VelocityMagDir()
@@ -105,6 +110,7 @@ namespace RTI
                 IsBtVelGood = false;
                 BtEastVel = BAD_VELOCITY;
                 BtNorthVel = BAD_VELOCITY;
+                BtFirstPingTime = 0.0;
             }
 
             /// <summary>
@@ -123,6 +129,7 @@ namespace RTI
                 IsBtVelGood = false;
                 BtEastVel = BAD_VELOCITY;
                 BtNorthVel = BAD_VELOCITY;
+                BtFirstPingTime = 0.0;
             }
         }
 
@@ -353,6 +360,8 @@ namespace RTI
                             if (isRemoveShipSpeed && !string.IsNullOrEmpty(jsonBT))
                             {
                                 JObject btData = JObject.Parse(jsonBT);
+                                result.BtFirstPingTime = btData["FirstPingTime"].ToObject<double>();
+
                                 double[] btEarthVel = btData["EarthVelocity"].ToObject<double[]>();
 
                                 // Get the Bottom Track Earth North and East velocity
