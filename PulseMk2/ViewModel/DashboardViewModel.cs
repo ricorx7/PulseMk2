@@ -152,18 +152,22 @@ namespace RTI
 
                 if (config != null)
                 {
-                    // Only load new configs
-                    if (config != prevConfig)
+                    // Check if the config exist already
+                    //if (!_dictSsConfig.ContainsKey(config))
                     {
-                        _dictSsConfig[config].LoadProject(project);
+                        // Only load new configs
+                        if (config != prevConfig)
+                        {
+                            _dictSsConfig[config].LoadProject(project);
+                        }
+
+                        // Keep track of the previous config so we do not reload the same configuration
+                        prevConfig = config;
+
+                        Status = string.Format("Add configuration {0}", config.Config.DescString());
+                        log.Debug(Status);
+                        _eventAggregator.PublishOnUIThreadAsync(new StatusMessageEvent(Status));
                     }
-
-                    // Keep track of the previous config so we do not reload the same configuration
-                    prevConfig = config;
-
-                    Status = string.Format("Add configuration {0}", config.Config.DescString());
-                    log.Debug(Status);
-                    _eventAggregator.PublishOnUIThreadAsync(new StatusMessageEvent(Status));
                 }
             }
 
@@ -262,11 +266,11 @@ namespace RTI
                 else
                 {
                     // Viewmodel already exist, so send the ensemble
-                    DashboardSubsystemConfigViewModel vm = null;
-                    if (_dictSsConfig.TryGetValue(config, out vm))
-                    {
-                        vm.ProcessEnsemble(ensemble, source);
-                    }
+                    //DashboardSubsystemConfigViewModel vm = null;
+                    //if (_dictSsConfig.TryGetValue(config, out vm))
+                    //{
+                    //    vm.ProcessEnsemble(ensemble, source);
+                    //}
 
                     //return config;
                 }

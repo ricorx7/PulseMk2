@@ -547,7 +547,7 @@ namespace RTI
                             // Get total number of ensembles in the project
                             // Run as a task to allow the UI to be updated
                             // Use await to keep the sqlite connection open
-                            await Task.Run(() => TotalNumEnsembles = GetNumEnsembles(sqlite_conn));
+                            TotalNumEnsembles = GetNumEnsembles(sqlite_conn);
 
                             // If this is the first time loading
                             // show the entire plot
@@ -563,7 +563,7 @@ namespace RTI
                             // Get the data
                             // Run as a task to allow the UI to be updated
                             // Use await to keep the sqlite connection open
-                            await Task.Run(() => data = QueryDataFromDb(sqlite_conn, selectedPlotType, minIndex, maxIndex));
+                            data = QueryDataFromDb(sqlite_conn, selectedPlotType, minIndex, maxIndex);
 
                             // Close connection
                             sqlite_conn.Close();
@@ -1013,30 +1013,33 @@ namespace RTI
             PlotData data = null;
             await Task.Run(() => data = GetData(_ProjectFilePath, _SelectedPlotType, startIndex, endIndex).Result);
 
-            // Get the curernt data from the plot
-            double[,] origData = null;
-            foreach (var series in Plot.Series)
+            if (data != null)
             {
-                if (series.GetType() == typeof(HeatMapSeries))
+                // Get the curernt data from the plot
+                double[,] origData = null;
+                foreach (var series in Plot.Series)
                 {
-                    origData = ((HeatMapSeries)series).Data;
+                    if (series.GetType() == typeof(HeatMapSeries))
+                    {
+                        origData = ((HeatMapSeries)series).Data;
+                    }
                 }
+
+                // Combine the data already plotted with the new data selected
+                data.ProfileData = CombineData(data.ProfileData, origData);
+
+                // Draw the plot
+                // Accumulate the data
+                await Task.Run(() => DrawPlot(data, true));
+
+                // If this is the first time loading
+                // Update the meter axis
+                //if (_firstLoad)
+                //{
+                //    // Set the Bin size and blank
+                //    _firstLoad = !SetBinSizeAndBlank(ens);
+                //}
             }
-
-            // Combine the data already plotted with the new data selected
-            data.ProfileData = CombineData(data.ProfileData, origData);
-
-            // Draw the plot
-            // Accumulate the data
-            await Task.Run(() => DrawPlot(data, true));
-
-            // If this is the first time loading
-            // Update the meter axis
-            //if (_firstLoad)
-            //{
-            //    // Set the Bin size and blank
-            //    _firstLoad = !SetBinSizeAndBlank(ens);
-            //}
         }
 
         #endregion
@@ -1216,7 +1219,9 @@ namespace RTI
         private ViewResolvingPlotModel CreatePlot()
         {
             ViewResolvingPlotModel temp = new ViewResolvingPlotModel();
-            //temp.Background = OxyColors.Black;
+
+            temp.PlotMargins = new OxyThickness(85, 50, 50, 50);
+            temp.Padding = new OxyThickness(0);
 
             // Color Legend
             var linearColorAxis1 = new LinearColorAxis();
@@ -1246,10 +1251,20 @@ namespace RTI
             // Left axis in Meters next to bins
             _depthAxis = CreatePlotAxis(AxisPosition.Left, "meters", 2);
             _depthAxis.Key = "DepthAxis";
+            _depthAxis.MajorStep = 10.0;
+            _depthAxis.MinorStep = 5.0;
             temp.Axes.Add(_depthAxis);
 
-            temp.Padding = new OxyThickness(0);
-            temp.PlotMargins = new OxyThickness(60);
+            // Add a series
+            HeatMapSeries series = new HeatMapSeries();
+            // Initialize the values
+            series.X0 = 0;
+            series.X1 = 2;
+            series.Y0 = 0;
+            series.Y1 = 2;
+            // Added 100, because amplitude max goes to 120 possibliy which is larger than bad_vel
+            series.Data = new double[2, 2] { { DataSet.Ensemble.BAD_VELOCITY + 100, DataSet.Ensemble.BAD_VELOCITY + 100 }, { DataSet.Ensemble.BAD_VELOCITY + 100, DataSet.Ensemble.BAD_VELOCITY + 100 } };
+            temp.Series.Add(series);
 
             return temp;
         }
@@ -1338,14 +1353,14 @@ namespace RTI
         /// <param name="isAccum">Accumulate the plot or clear the plot before plotting the new data.</param>
         /// <param name="minIndex">Minimum index to draw.</param>
         /// <param name="maxIndex">Maximum index to draw.</param>
-        protected async void DrawPlot(string fileName, PlotDataType selectedPlotType, bool isAccum, int minIndex = 0, int maxIndex = 0)
+        protected void DrawPlot(string fileName, PlotDataType selectedPlotType, bool isAccum, int minIndex = 0, int maxIndex = 0)
         {
             // Get the data
             PlotData data = null;
-            await Task.Run(() => data = GetData(fileName, selectedPlotType, minIndex, maxIndex).Result);
+            data = GetData(fileName, selectedPlotType, minIndex, maxIndex).Result;
 
             // Plot the data
-            await Task.Run(() => DrawPlot(data, isAccum));
+            DrawPlot(data, isAccum);
         }
 
         /// <summary>
@@ -1433,6 +1448,11 @@ namespace RTI
                         // Add the series to the plot
                         StatusMsg = "Add Plot data";
                         Plot.Series.Add(series);
+
+                        Debug.WriteLine(string.Format("X1 {0}", series.X1));
+                        Debug.WriteLine(string.Format("Y1 {0}", series.Y1));
+                        Debug.WriteLine(string.Format("Data {0},{1}", data.GetLength(0), data.GetLength(1)));
+                        Debug.WriteLine(string.Format("Series Count {0}", Plot.Series.Count));
                     }
                 }
                 catch (Exception ex)
@@ -1708,7 +1728,10 @@ namespace RTI
                 // Set the major step based off the bin size
                 if (_binSize > 0)
                 {
-                    _depthAxis.MajorStep = _binSize * 2.0;
+                    if (_depthAxis != null)
+                    {
+                        _depthAxis.MajorStep = _binSize * 2.0;
+                    }
                 }
 
                 return true;
@@ -1760,6 +1783,10 @@ namespace RTI
                 {
                     // Move all the data over
                     Plot.Series.Clear();
+
+                    // Set the axis for the depth in meters
+                    _depthAxis.Minimum = vm._depthAxis.Minimum;
+                    _depthAxis.Maximum = vm._depthAxis.Maximum;
 
                     // All all the data from the original Plot
                     foreach (var series in vm.Plot.Series)

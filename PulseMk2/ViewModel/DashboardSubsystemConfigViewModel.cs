@@ -724,7 +724,7 @@ namespace RTI
         {
             HeatmapPlot.LoadProject(project.GetProjectFullPath(), Config.Config);
             ShipTrackGmapPlot.LoadProject(project.GetProjectFullPath(), Config.Config);
-            TimeSeriesPlot.LoadProject(project.GetProjectFullPath(), Config.Config);
+            //TimeSeriesPlot.LoadProject(project.GetProjectFullPath(), Config.Config);
             ShipTrackPlot.LoadProject(project.GetProjectFullPath(), Config.Config);
         }
 

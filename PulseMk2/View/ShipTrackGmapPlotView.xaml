@@ -190,6 +190,18 @@
                                 </ListView.View>
                             </ListView>
                         </MenuItem>
+                        <MenuItem>
+                            <MenuItem.HeaderTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Button Grid.Column="0" Content="Screenshot" Command="{Binding DataContext.TakeScreenShotCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContextMenu}}" HorizontalAlignment="Left" ToolTip="Take a screen shot of the current map." />
+                                    </Grid>
+                                </DataTemplate>
+                            </MenuItem.HeaderTemplate>
+                        </MenuItem>
                     </ContextMenu>
                 </gmaps:GMapControl.ContextMenu>
             </gmaps:GMapControl>

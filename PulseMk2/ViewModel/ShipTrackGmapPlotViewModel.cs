@@ -578,7 +578,7 @@ namespace RTI
             NotifyOfPropertyChange(() => LastMarkerScale);
             NotifyOfPropertyChange(() => IsLastMarkerEllipse);
 
-            Application.Current.Dispatcher.Invoke((Action)delegate
+            System.Windows.Application.Current.Dispatcher.Invoke((Action)delegate
             {
                 ColorMapCanvas = ColorHM.GetColorMapLegend(_MinValue, _MaxValue);       // Set the color map canvas
             });
@@ -1072,7 +1072,39 @@ namespace RTI
 
         public void TakeScreenShot()
         {
-            ((ShipTrackGmapPlotView)this.GetView()).TakeScreenShot();
+            //((ShipTrackGmapPlotView)this.GetView()).TakeScreenShot();
+            Application.Current.Dispatcher.Invoke((Action)delegate
+            {
+                string path = System.IO.Path.GetTempPath() + System.IO.Path.GetRandomFileName() + @".png";
+                var imgSource = ((ShipTrackGmapPlotView)this.GetView()).MapView.ToImageSource();
+                var _tmpImage = ImageWpfToGDI(imgSource);
+                if (_tmpImage == null) return;
+                _tmpImage.Save(path);
+
+                System.Drawing.Printing.PrintDocument doc = new System.Drawing.Printing.PrintDocument { DocumentName = "Map printing file" };
+                doc.PrintPage += DocOnPrintPage;
+                System.Windows.Forms.PrintDialog dialog = new System.Windows.Forms.PrintDialog { Document = doc };
+                System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK) doc.Print();
+            });
+        }
+
+        private System.Drawing.Image ImageWpfToGDI(System.Windows.Media.ImageSource image)
+        {
+            MemoryStream ms = new MemoryStream();
+            var encoder = new System.Windows.Media.Imaging.BmpBitmapEncoder();
+            encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(image as System.Windows.Media.Imaging.BitmapSource));
+            encoder.Save(ms);
+            ms.Flush();
+            return System.Drawing.Image.FromStream(ms);
+        }
+
+        private void DocOnPrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
+        {
+            var imgSource = ((ShipTrackGmapPlotView)this.GetView()).MapView.ToImageSource();
+            var img = ImageWpfToGDI(imgSource);
+            System.Drawing.Point loc = new System.Drawing.Point(0, 0);
+            e.Graphics.DrawImage(img, loc);
         }
 
         #endregion
